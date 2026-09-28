@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NCI Student Information Assistant</title>
+<meta name="description" content="Answers to common NCI postgraduate student questions, taken from the public NCI website and linking to the official page.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <h1>NCI Student Information Assistant</h1>
+    <p class="tagline">Quick answers for MSc students, taken from the public NCI website. Every answer links to the official page.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <form id="ask-form" class="ask-form" autocomplete="off">
+    <label class="sr-only" for="question">Your question</label>
+    <input
+      id="question"
+      name="question"
+      type="text"
+      placeholder="Ask a question, e.g. when is reading week?"
+      aria-describedby="input-hint"
+      required>
+    <button id="ask-button" type="submit">Ask</button>
+  </form>
+  <p id="input-hint" class="hint">
+    This assistant only answers from a fixed knowledge base. If it does not know, it will say so.
+  </p>
+
+  <section id="answer" class="answer-area" aria-live="polite" aria-atomic="true">
+    <p class="placeholder">Type a question above to get started.</p>
+  </section>
+
+  <section id="suggest-block" class="suggest-block" hidden>
+    <h2>Was this not the answer you needed?</h2>
+    <p id="suggest-prompt">Tell us what you were looking for and we will add it to the knowledge base.</p>
+    <a id="suggest-link" class="btn-secondary" href="https://www.ncirl.ie/Students/Student-Services" target="_blank" rel="noopener">
+      Suggest a question
+    </a>
+  </section>
+
+  <section class="popular" aria-labelledby="popular-heading">
+    <h2 id="popular-heading">Most searched questions</h2>
+    <p class="hint" id="popular-source">Loading&hellip;</p>
+    <ol id="popular-list" class="popular-list"></ol>
+  </section>
+
+  <section class="browse" aria-labelledby="browse-heading">
+    <h2 id="browse-heading">Everything it can answer</h2>
+    <p class="hint">Click any question to see the answer and the official source.</p>
+    <div id="category-filters" class="filters"></div>
+    <div id="entry-list" class="entry-list"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>
+      <strong>Source of truth:</strong> every answer here is a summary of a public page on
+      <a href="https://www.ncirl.ie" target="_blank" rel="noopener">ncirl.ie</a>.
+      If this page and the official NCI page ever disagree, the official page is correct.
+    </p>
+    <p>
+      This assistant holds no personal data. It does not ask for your name, email or student number,
+      it cannot see your Moodle, and it will never invent an answer.
+      Cannot find what you need?
+      <a href="https://ncisupporthub.ncirl.ie/hc/en-ie" target="_blank" rel="noopener">NCI Support Hub</a> or
+      <a href="https://www.ncirl.ie/Students/Student-Services" target="_blank" rel="noopener">Student Services</a>.
+    </p>
+    <p class="meta">
+      Knowledge base last reviewed <span id="last-reviewed">&hellip;</span> &middot;
+      Built for NCI postgraduate (MSc) students &middot; Not an official NCI service
+    </p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
