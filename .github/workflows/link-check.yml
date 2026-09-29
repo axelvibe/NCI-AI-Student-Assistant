@@ -1,0 +1,111 @@
+name: Check source links
+
+# Flags NCI pages cited in knowledge.json that have been deleted or moved.
+# BLOCKED (403/429) is treated as a warning, not a failure: ncisupporthub
+# refuses all automated traffic, and that is not evidence a page is gone.
+on:
+  schedule:
+    # Mondays 07:00 UTC.
+    - cron: '0 7 * * 1'
+  push:
+    paths:
+      - 'knowledge.json'
+      - 'check_links.py'
+      - '.github/workflows/link-check.yml'
+  pull_request:
+    paths:
+      - 'knowledge.json'
+      - 'check_links.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check every source link
+        id: links
+        run: |
+          set +e
+          python3 check_links.py knowledge.json --timeout 30 --json > link-report.json
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import json
+          d = json.load(open('link-report.json'))
+          print("checked %d urls: %d problem(s), %d blocked"
+                % (d['total'], d['problems'], d['blocked']))
+          for r in d['results']:
+              if r['status'] in ('BROKEN','UNREACHABLE','INVALID','HTTP_5','TLS'):
+                  print("  PROBLEM %-12s %s" % (r['status'], r['url']))
+                  print("            %s" % r['detail'])
+                  print("            cited by: %s" % ', '.join(r['used_by']))
+          PY
+
+      - name: Build issue body
+        if: steps.links.outputs.exit_code != '0'
+        id: body
+        run: |
+          python3 - <<'PY' > issue-body.md
+          import json
+          d = json.load(open('link-report.json'))
+          bad = [r for r in d['results'] if r['status'] in ('BROKEN','UNREACHABLE','INVALID','HTTP_5','TLS')]
+          print("A source cited in `knowledge.json` is no longer reachable.\n")
+          print("| Status | URL | Detail | Cited by |")
+          print("| --- | --- | --- | --- |")
+          for r in bad:
+              print("| %s | %s | %s | %s |" % (r['status'], r['url'],
+                    r['detail'].replace('|', '/'), ', '.join(r['used_by'])))
+          print("\nReplace the `link` (and any `links`) in the affected entry, then re-run.")
+          if d['blocked']:
+              print("\n<details><summary>%d URL(s) returned 403 and were not treated as broken</summary>\n"
+                    % d['blocked'])
+              for r in d['results']:
+                  if r['status'] == 'BLOCKED':
+                      print("- %s" % r['url'])
+              print("\n</details>")
+          PY
+
+      - name: Open or update the issue
+        if: steps.links.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('issue-body.md', 'utf8');
+            const title = 'Source link broken in knowledge.json';
+            const { owner, repo } = context.repo;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'link-check'
+            });
+            const existing = issues.find(i => i.title === title);
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+              core.info('Updated issue #' + existing.number);
+            } else {
+              const { data: created } = await github.rest.issues.create({
+                owner, repo, title, body, labels: ['link-check']
+              });
+              core.info('Opened issue #' + created.number);
+            }
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-report
+          path: link-report.json
+          retention-days: 30
+
+      - name: Fail the run
+        if: steps.links.outputs.exit_code != '0'
+        run: |
+          echo "::error::One or more source links are unreachable. See the link-check issue."
+          exit 1

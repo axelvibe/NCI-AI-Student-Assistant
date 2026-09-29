@@ -701,10 +701,25 @@ function writeLocalStats(stats) {
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(stats)); } catch (e) { /* private mode */ }
 }
 
+// Search text is only ever used to show popular questions, but a student can
+// accidentally type their student number, email or password into the box.
+// Anything that looks like a credential is stripped before it is stored
+// anywhere, so no identifier ever reaches local storage or the sheet.
+function redactForStats(text) {
+  return normalise(text)
+    .replace(/[^\s@]+@[^\s@]+/g, ' [email] ')
+    .replace(/\b(?:password|passwd|pwd|passcode)\b\s*(?:is|are|was|=|:)?\s*["']?[^\s"']{3,}["']?/gi,
+             ' password [redacted]')
+    .replace(/\b(?:x|ca)?\d{5,}\b/g, ' [id] ')
+    .replace(/\b\d{4,}\b/g, ' [number] ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function recordSearch(query, entryId) {
   // -- local counts
   const stats = readLocalStats();
-  const key = normalise(query).slice(0, 80) || '(blank)';
+  const key = redactForStats(query).slice(0, 80) || '(blank)';
   stats[key] = (stats[key] || 0) + 1;
   writeLocalStats(stats);
 

@@ -157,3 +157,20 @@ It reports four outcomes that matter:
 `ncisupporthub.ncirl.ie` returns 403 to automated requests, so its articles
 always show as `BLOCKED`. Those pages are real; confirm changes to them by hand.
 
+
+## Turning on the optional extras
+
+`CONFIG.statsEndpoint` and `CONFIG.suggestionFormUrl` in `app.js` are empty by
+default, because both point at resources in a personal Google account. The code
+for them is already written and tested:
+
+- `docs/GOOGLE-SETUP.md` - step-by-step, about 10 minutes
+- `docs/google-apps-script/Code.gs` - paste this into Apps Script
+
+`.github/workflows/link-check.yml` runs `check_links.py` every Monday and on any
+change to `knowledge.json`, and opens a `link-check` issue if a cited page dies.
+HTTP 403 is reported as a warning rather than a failure, because
+`ncisupporthub.ncirl.ie` refuses all automated traffic.
+
+Search text is scrubbed in the browser and again on the server, so student
+numbers, email addresses and passwords never reach the sheet.
