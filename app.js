@@ -323,13 +323,50 @@ function scoreEntry(entry, queryNorm, queryList, querySet, queryGrams) {
   return { raw, score: raw / WEIGHT_TOTAL, exact: exact > 0, coverage };
 }
 
+function stopwordOnlySearch(queryNorm) {
+  // Only reached when the query contains no indexable content words, so the
+  // comparison is done on raw normalised text.
+  let best = null;
+  for (const e of state.entries) {
+    const qText = normalise(e.question);
+    const variants = (e.variants || []).map(normalise);
+    let score = 0, exact = false;
+    if (queryNorm === qText || variants.indexOf(queryNorm) !== -1) {
+      score = 1; exact = true;
+    } else if (queryNorm.indexOf(qText) !== -1) {
+      score = 0.8;
+    } else {
+      for (const v of variants) {
+        if (v && queryNorm.indexOf(v) !== -1) { score = 0.7; break; }
+      }
+    }
+    if (score > 0 && (!best || score > best.score)) {
+      best = { entry: e, score: score, exact: exact, coverage: 1, also: [] };
+    }
+  }
+  if (!best) return { matched: false, ranked: [], topScore: 0 };
+  return {
+    matched: true,
+    entry: best.entry,
+    score: best.score,
+    exact: best.exact,
+    also: []
+  };
+}
+
 function search(query) {
   const queryNorm = normalise(query);
+  if (!queryNorm) return null;
+
+  // A query made entirely of stopwords ("where do I go if I need help") has no
+  // content tokens left to score against, but it is still a real question. Fall
+  // back to a plain text test against each entry's question and its rewordings.
+  // This can only fire when the query has no indexable terms at all, so it
+  // cannot loosen matching for any ordinary question.
   const queryList = tokenise(query, false);
   const querySet = new Set(queryList);
+  if (querySet.size === 0) return stopwordOnlySearch(queryNorm);
   const queryGrams = bigrams(query);
-
-  if (!queryNorm || querySet.size === 0) return null;
 
   // IDF needs the total entry count on each entry.
   for (const e of state.entries) e.entryCountN = state.entryCount;
@@ -395,6 +432,55 @@ function highlight(container, query) {
   });
 }
 
+const DISTRESS_PATTERNS = [
+  /\bkill(ing)? myself\b/, /\bsuicid/, /\bself[- ]harm/, /\bend(ing)? my life\b/,
+  /\boverdose\b/, /\bhurt myself\b/, /\bcan'?t go on\b/, /\bno reason to live\b/,
+  /\bwant to die\b/, /\bhope to die\b/,
+  /\bstress(ed|ful|ing)?\b/, /\bstressed\b/, /\boverwhelm(ed|ing)?\b/,
+  /\banx(ious|iety)\b/, /\bdepress(ed|ion)?\b/, /\bpanic\b/, /\bburnt out\b/,
+  /\bburned out\b/, /\bnot coping\b/, /\bstruggling\b/, /\bmental health\b/,
+  /\bunwell\b/, /\bfeeling low\b/, /\bhopeless\b/, /\bdifficult to concentrate\b/,
+  /\bcan'?t sleep\b/, /\bcannot sleep\b/, /\bstruggle to sleep\b/, /\bexhausted\b/,
+  /\bburnout\b/, /\blonely\b/, /\bisolated\b/,
+  /\bcrisis\b/, /\bcounselling\b/, /\bcounsel(ing|or)\b/, /\btherap(y|ist)\b/,
+];
+
+const WELLBEING_ENTRY = 'counselling-wellbeing';
+
+function renderWellbeing(query) {
+  const q = (query || '').toLowerCase();
+  if (!q || !DISTRESS_PATTERNS.some(re => re.test(q))) return null;
+
+  const e = (state.kb.entries || []).find(x => x.id === WELLBEING_ENTRY);
+  if (!e) return null;
+
+  const card = document.createElement('div');
+  card.className = 'card wellbeing';
+
+  const h = document.createElement('h2');
+  h.textContent = 'If you are struggling, you are not alone';
+  card.appendChild(h);
+
+  const p = document.createElement('p');
+  p.className = 'answer';
+  p.textContent =
+    'If any of this is weighing on you, please talk to someone. NCI\'s Student Counselling and ' +
+    'Wellbeing Service offers confidential appointments and is the right first step. You can also ' +
+    'see your programme co-ordinator or the Students\' Union. If you or someone else is in ' +
+    'immediate danger, contact emergency services.';
+  card.appendChild(p);
+
+  const a = document.createElement('a');
+  a.className = 'source';
+  a.href = e.link;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.textContent = e.linkLabel + ' ↗';
+  card.appendChild(a);
+
+  return card;
+}
+
 function renderMatch(result, query) {
   els.answer.innerHTML = '';
   const e = result.entry;
@@ -421,13 +507,34 @@ function renderMatch(result, query) {
   card.appendChild(p);
   highlight(p, query);
 
-  const a = document.createElement('a');
-  a.className = 'source';
-  a.href = e.link;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  a.textContent = e.linkLabel + ' ↗';
-  card.appendChild(a);
+  const sources = [];
+  if (e.link) sources.push({ href: e.link, label: e.linkLabel || 'Official NCI page' });
+  (e.links || []).forEach(href => {
+    if (!sources.some(s => s.href === href)) {
+      sources.push({ href: href, label: 'More on this topic' });
+    }
+  });
+  const srcHead = document.createElement('p');
+  srcHead.className = 'source-head';
+  srcHead.textContent = sources.length > 1 ? 'Official NCI sources' : 'Source';
+  card.appendChild(srcHead);
+  const srcWrap = document.createElement('div');
+  srcWrap.className = 'source-list';
+  sources.forEach(s => {
+    const a = document.createElement('a');
+    a.className = 'source';
+    a.href = s.href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = s.label + ' ↗';
+    srcWrap.appendChild(a);
+  });
+  card.appendChild(srcWrap);
+
+  const caveat = document.createElement('p');
+  caveat.className = 'caveat';
+  caveat.textContent = 'Please confirm on the official NCI page, as dates and policies can change.';
+  card.appendChild(caveat);
 
   const chk = document.createElement('p');
   chk.className = 'checked';
@@ -435,6 +542,9 @@ function renderMatch(result, query) {
   card.appendChild(chk);
 
   els.answer.appendChild(card);
+
+  const wellbeing = renderWellbeing(query);
+  if (wellbeing) els.answer.appendChild(wellbeing);
 
   if (result.also.length) {
     const also = document.createElement('div');
@@ -515,6 +625,9 @@ function renderNoMatch(query, result) {
   }
 
   els.answer.appendChild(card);
+
+  const wellbeing = renderWellbeing(query);
+  if (wellbeing) els.answer.appendChild(wellbeing);
 }
 
 function renderError(message) {

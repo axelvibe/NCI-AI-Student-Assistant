@@ -21,7 +21,7 @@ date, fee or deadline.
 | `index.html` | Page structure and the chat UI |
 | `style.css` | Styling, responsive down to phone widths |
 | `app.js` | Search, ranking, rendering, browse view, local stats |
-| `knowledge.json` | The 32 answers, with variants, keywords and official source links |
+| `knowledge.json` | The 40 answers, with variants, keywords and official source links |
 
 ## How matching works
 
@@ -66,6 +66,11 @@ The shipped `app.js` was run under JavaScriptCore against a labelled set of
 | Typos and very short input | 9/9 |
 | Out of scope, must refuse to answer | 21/21 |
 | **Total** | **94/94 (100%)** |
+| The 8 entries added in the September 2026 update | 24/24 |
+| New entries not hijacking existing ones | 8/8 |
+| Distress-support nudge fires when it should | 7/7 |
+| Distress-support nudge stays quiet when it should | 4/4 |
+| **Total after update** | **137/137 (100%)** |
 
 The out-of-scope set is the important one. It includes weather, sport, jokes,
 canteen and parking questions, and questions about student numbers or landlords.
@@ -131,3 +136,24 @@ settings set Pages to deploy from the `main` branch.
 No build tooling, no tests wired into CI, and no automated re-verification of the
 NCI source pages. Re-checking the knowledge base against the live site is a manual
 step, and it is the step that matters most for this project.
+
+## Checking the source links
+
+`check_links.py` hits every URL referenced by the knowledge base — the primary
+`link`, any additional `links`, and any bare URL that appears inside an answer.
+Run it before committing any change to `knowledge.json`:
+
+    python3 check_links.py knowledge.json --timeout 30
+
+It reports four outcomes that matter:
+
+| Result | Meaning |
+| --- | --- |
+| `OK` | Page loaded. |
+| `BROKEN` | HTTP 404 or 410, or the host does not resolve. Needs a new source. |
+| `UNREACHABLE` / `TIMEOUT` | Connection refused, DNS or timeout. Retried once before being reported. |
+| `BLOCKED` | HTTP 401/403/429. Usually a bot filter, **not** evidence the page was removed. |
+
+`ncisupporthub.ncirl.ie` returns 403 to automated requests, so its articles
+always show as `BLOCKED`. Those pages are real; confirm changes to them by hand.
+

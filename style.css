@@ -398,3 +398,36 @@ mark { background: #ffe9a8; padding: 0 1px; border-radius: 2px; }
 @media print {
   .ask-form, .suggest-block, .filters, .site-footer .meta { display: none; }
 }
+
+/* multi-source lists, date caveat and wellbeing nudge */
+.source-head {
+  margin: 14px 0 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted, #5b6b7b);
+}
+.source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.source-list .source { display: inline-block; }
+.caveat {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #c8891b;
+  background: #fdf6e7;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.9rem;
+  color: #4a3a12;
+}
+.card.wellbeing {
+  margin-top: 16px;
+  border: 1px solid #b7d4c4;
+  border-left: 4px solid #1f7a4d;
+  background: #f1f9f4;
+}
+.card.wellbeing h2 { color: #145c39; }

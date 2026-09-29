@@ -5,8 +5,9 @@
     "academicYear": "2026/27",
     "lastReviewed": "2026-09-28",
     "source": "https://www.ncirl.ie",
-    "disclaimer": "This assistant only returns answers that are written down in this knowledge base. Every answer is taken from the public NCI website and links to the official page. If it cannot find a confident match it says so and points you to NCI directly. It never guesses.",
-    "privacy": "No personal data is collected or displayed. Nothing about individual students or staff is stored here."
+    "disclaimer": "This assistant only returns answers that are written down in this knowledge base. Every answer is taken from the public NCI website and links to the official page. If it cannot find a confident match it says so and points you to NCI directly. It never guesses. Policies, fees and dates can change, so confirm anything important on the official NCI page before you rely on it.",
+    "privacy": "No personal data is collected or displayed. Nothing about individual students or staff is stored here.",
+    "note": "Sourced and verified against official NCI pages on 2026-09-28. Policy documents referenced: late submission TCH-POL-010-PUB (effective 01/09/2026), assessment resits, assessment deferral, Student Attendance and Engagement Policy (effective 01/01/2026)."
   },
   "fallback": {
     "message": "I could not find a confident answer to that in my knowledge base, so I am not going to guess. Here are the official NCI pages where this is answered:",
@@ -229,7 +230,7 @@
         "exce",
         "evidence"
       ],
-      "answer": "Extensions and re-runs are requested through NCI360, not by email to your lecturer. Log in to NCI360, choose Key Application Forms and Requests, then select Application for Coursework Extension/Rerun. You must state the module affected, the assessment format, the period of time affected and the grounds for the application, and you must attach supporting documentation such as a medical certificate, or the request cannot be processed. Apply at least two days before the submission deadline. Extensions are only granted in exceptional circumstances and cannot be granted for Terminal Alternative Assessments or for the 4th Year Software Project module, and your programme co-ordinator will tell you if the QQI exam board dates make an extension impossible.",
+      "answer": "Extensions are only considered in exceptional circumstances and you must provide evidence. Submit the request through NCI360, and allow for the standard 7 working days, or up to 14 where there is good reason. Send the request at least 5 days before the original submission deadline, because an extension cannot be granted retrospectively. Approvals are recorded in your assessment plan, and you should get written confirmation before you assume the new date applies.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Deferrals",
       "linkLabel": "NCI Exam Deferrals and Extensions",
       "checked": "2026-09-28"
@@ -259,10 +260,14 @@
         "next",
         "attempt"
       ],
-      "answer": "If you defer an assessment or exam, it is normally completed at the next sitting or repeat session for that module in the same academic year. For 2026/27 the repeat and Semester 3 exam period is 3 to 21 August 2027, and there is a further Semester 3 and repeat exam period from 5 to 21 January 2028 for the September 2027 starters. These dates come from the Academic Calendar rather than the deferrals page. Be aware that NCI distinguishes three kinds of deferral: an assessment deferral is completed at the next sitting, but a module or programme deferral moves you to the following academic year, so check which type you have been granted. Deferral requests are submitted through NCI360 and the normal turnaround is ten working days, so apply well before the exam.",
+      "answer": "For an in-class assessment, you apply for a resit within 5 days of the original scheduled date. If it is granted, the resit is scheduled during class time in the final week of the semester, which NCI calls Assessment Contingency Week, and there is only one resit opportunity per in-class assessment. Routine workload, poor time management and technical problems are not valid grounds unless the problem was independently verified at the time. This policy does not cover end-of-semester exams, which are handled under the College's assessment deferral policy.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Deferrals",
       "linkLabel": "NCI Exam Deferrals",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "links": [
+        "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/24283834704028-Assessment-Resits-Policy-and-Procedure",
+        "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/6666894872860-How-do-I-Request-an-Assessment-deferral"
+      ]
     },
     {
       "id": "results-release-date",
@@ -384,10 +389,15 @@
         "descriptor",
         "readings"
       ],
-      "answer": "Lecture slides, notes, readings and recordings are published on your module page in Moodle, usually in the section for that week. If something is not on the module page, ask your lecturer, as material is sometimes distributed in class only. The formal description of each module, including learning outcomes and assessment weighting, is in the NCI module descriptors at http://courses.ncirl.ie/index.cfm , and the library has subject and module guides for finding readings at https://libguides.ncirl.ie/subjectandlibraryguides . I cannot read your private module pages, so the brief and materials are best found in Moodle.",
+      "answer": "Lecture slides, notes, readings and recordings are published on your module page in Moodle, usually in the section for that week. If something is not on the module page, ask your lecturer, as material is sometimes distributed in class only. The formal description of each module, including learning outcomes and assessment weighting, is in the NCI module descriptors at https://courses.ncirl.ie/ , and the library has subject and module guides for finding readings at https://libguides.ncirl.ie/subjectandlibraryguides . I cannot read your private module pages, so the brief and materials are best found in Moodle.",
       "link": "https://moodle2026.ncirl.ie/",
       "linkLabel": "NCI Moodle",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "links": [
+        "https://www.ncirl.ie/Students/Current-Students-Hub",
+        "https://libguides.ncirl.ie/subjectandlibraryguides",
+        "https://courses.ncirl.ie/"
+      ]
     },
     {
       "id": "submit-assignment-moodle",
@@ -511,10 +521,14 @@
         "24/7",
         "anywhere"
       ],
-      "answer": "Sign in to the library with the same NCI credentials you use for Moodle: click Library Login at https://library.ncirl.ie/account . From there you can search the catalogue, use EBSCO Discovery for journal articles, and reach the A-Z list of databases, e-journals and e-books. Online resources are available 24 hours a day from any location, and the Library Academic Support Centre is at https://libguides.ncirl.ie/libraryacademicsupportcentre if you need help. The Norma Smurfit Library is on the 4th and 5th floors of the Spencer Dock campus.",
+      "answer": "Your NCI student card is your library card. To get into the library, swipe it at the gates on the ground floor of Spencer Dock. For e-books, databases and journals, go through the NCI Library homepage so you are prompted to sign in, using your NCI student email address and password. Sign-in gives you 24/7 access from anywhere to over 150,000 journals and over 60,000 e-books across seven databases, plus past NCI exam papers and open-access NCI theses.",
       "link": "https://libguides.ncirl.ie/library",
       "linkLabel": "NCI Library home",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "links": [
+        "https://libguides.ncirl.ie/libraryessentials/onlinelibraryresources",
+        "https://libguides.ncirl.ie/libraryessentials/openinghoursaccess"
+      ]
     },
     {
       "id": "library-borrow-books",
@@ -550,10 +564,14 @@
         "fines",
         "overdue"
       ],
-      "answer": "The Norma Smurfit Library is on the 4th and 5th floors of the Spencer Dock campus. Borrow a book by scanning your student card on one of the self-service machines on either floor, or by asking a member of library staff at the information desk on the 4th floor. As a postgraduate you can borrow 10 items at a time for 4 weeks. You need your student card, which is also how you swipe in at the building gates and how your print credit is connected. If every copy of a book is out, place a reservation from the catalogue; you are emailed to your NCI student email when it arrives and you have 5 working days to collect it from the desk. Returns go in the Book Returns Drop Box in the ground floor lobby or via the self-service machines. Overdue fines are 1 euro per item per day and your account is blocked at 10 euro.",
+      "answer": "You need your student card to borrow: bring it to the information desk on the 4th floor or use a self-service machine. You do not need a separate library card. Loan limits are 10 items for 4 weeks as a postgraduate student, and 5 items for 2 weeks as an undergraduate. Only you may use your card, and staff are permitted to confiscate it if someone else does. All library notices, including renewals, overdue items and reservations, go to your NCI email.",
       "link": "https://libguides.ncirl.ie/libraryessentials/borrowingrenewingbooks",
-      "linkLabel": "NCI Library: Borrowing and Renewing Books",
-      "checked": "2026-09-28"
+      "linkLabel": "Borrowing and renewing books",
+      "checked": "2026-09-28",
+      "links": [
+        "https://libguides.ncirl.ie/libraryessentials/borrowingrenewingbooks",
+        "https://libguides.ncirl.ie/libraryessentials/openinghoursaccess"
+      ]
     },
     {
       "id": "library-renew-books",
@@ -586,9 +604,9 @@
         "renewal period",
         "how many times"
       ],
-      "answer": "You do not normally need to do anything. Books automatically renew for another loan period unless another student has requested the title, in which case you will be emailed at your NCI student email address and asked to bring the item back. You can also renew yourself at any time: log in to your library account at https://library.ncirl.ie/account and click Renew, use the self-service kiosk on the 4th or 5th floor with your student card, ask at the library desk, or email library@ncirl.ie. The library is cashless, so fines can only be paid by debit or credit card.",
+      "answer": "If nobody else has requested your book, the due date renews automatically for another loan period. You can also renew in person, online through your library account, or by email. If every copy is out you can reserve it and it will be held at the information desk for 5 business days. Return books at the drop box in the ground floor lobby in Spencer Dock or at a self-service machine. Fines are EUR 1 per item per day overdue, and if you reach EUR 10 or more your account is blocked until you pay. The library is cashless and takes debit or credit card only, and fines under EUR 10 across the whole course do not need to be paid.",
       "link": "https://libguides.ncirl.ie/libraryessentials/borrowingrenewingbooks",
-      "linkLabel": "NCI Library: Borrowing and Renewing Books",
+      "linkLabel": "Borrowing and renewing books",
       "checked": "2026-09-28"
     },
     {
@@ -624,10 +642,15 @@
         "euro",
         "international"
       ],
-      "answer": "Course fees differ per programme and per mode of study, and NCI publishes the fee for each course on that course's own page rather than in one table. So the reliable way to get your figure is to open the page for your specific course in the NCI course search, which lists the part-time or full-time fee for that programme, and to check it again each year because fees are revised annually. The Postgraduate Fees page explains how to pay rather than what to pay. If paying in one go is difficult, NCI offers a direct debit plan where you pay 20% of the fees up front and the remainder in equal monthly instalments, with no extra charge. If you are an international student, your fees and funding are covered separately. If you need the figure confirmed for your own programme, Student Services or the Fees and Grants office can give you the exact amount that applies to you.",
-      "link": "https://www.ncirl.ie/Study/Fees-and-Grants/Postgraduate-Fees",
-      "linkLabel": "NCI Postgraduate Student Fees",
-      "checked": "2026-09-28"
+      "answer": "Fees are set per programme and are revised annually, so the amount on your enrolment offer is the one that counts. Verified example: the MSc in Artificial Intelligence for Business lists a total fee of EUR 7,000 for EU/Ireland applicants and EUR 17,000 for international students. Other programmes differ, so check your own course page or your offer letter in MyDetails. Payment is usually by direct debit plan or online payment, and instalment plans are available.",
+      "link": "https://www.ncirl.ie/Study/Fees-and-Grants",
+      "linkLabel": "Fees and grants",
+      "checked": "2026-09-28",
+      "links": [
+        "https://www.ncirl.ie/Study/Fees-and-Grants",
+        "https://www.ncirl.ie/Courses/NCI-Course-Details/course/MSCAIBUS",
+        "https://www.ncirl.ie/Study/Fees-and-Grants/Direct-Debit-Plan"
+      ]
     },
     {
       "id": "scholarships-financial-support",
@@ -695,10 +718,14 @@
         "volunteer",
         "ncisu"
       ],
-      "answer": "All NCI clubs and societies are run by students, for students, and are free to any registered full-time or part-time student. The current list includes clubs in Football, Basketball, GAA, Ladies GAA, Ladies Basketball, Badminton, Golf, Cricket and Pool/Snooker, and societies including 5 a side, Adventure, African, Arts, Dance, Equality, Fantasy Football, Irish Culture, Mental Health, Movie and Fashion. You sign up through the Students' Union at https://ncisu.ie/clubs-societies/ or at Sign Up Day during Freshers' Week. To start a new society, work with the Clubs and Societies Officer in the Students' Union. You can email clubsandsocs@ncisu.ie or sport@ncirl.ie.",
-      "link": "https://www.ncirl.ie/Students/Sports-Recreation/Clubs-and-Societies",
-      "linkLabel": "NCI Clubs and Societies",
-      "checked": "2026-09-28"
+      "answer": "NCI has clubs including football, basketball, GAA, badminton, golf, cricket and pool/snooker, and societies including dance, equality, fantasy football, Irish culture, mental health, movie and fashion. You join through the sign-up forms and QR codes on the Students' Union website. The Students' Union offices are in the basement of the Mayor Square building, which is the central hub for students, and the Clubs and Societies Officer can help you start something new if nothing suits.",
+      "link": "https://ncisu.ie/clubs-societies/",
+      "linkLabel": "Clubs and societies",
+      "checked": "2026-09-28",
+      "links": [
+        "https://ncisu.ie/clubs-societies/",
+        "https://www.ncirl.ie/Students/Sports-Recreation/Clubs-and-Societies"
+      ]
     },
     {
       "id": "orientation",
@@ -895,10 +922,15 @@
         "virtual desktop",
         "developer tools"
       ],
-      "answer": "Your entitlement to software all comes through the MyApps portal at https://myapps.microsoft.com/ . You get Microsoft Office 365 online and you can install the full desktop version of Word, Excel, PowerPoint and the rest on your own device. You also get a Virtual Desktop for software you cannot install locally, free print credit you top up at https://studentprint.ncirl.ie/webcentre/ , and a shared OneDrive and SharePoint. NCI Computing students additionally have access to free developer tools including Visual Studio Community, Visual Studio Code, SQL Server Developer, Visio Professional and Azure services through the Azure Dev Tools for Education link on the MyApps portal. Free online learning is also included, notably LinkedIn Learning.",
-      "link": "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/9765216008988-Getting-Started-with-NCI-s-Online-Services",
-      "linkLabel": "NCI Support Hub: Getting Started with Online Services",
-      "checked": "2026-09-28"
+      "answer": "NCI gives you free access to software through the Software Catalogue, including the Microsoft 365 Education plan, and you can reach everything from MyApps. A new student also starts with EUR 5 of print credit on their student card, and you top it up at the print web centre. The catalogue is only visible once you are signed in with your NCI account, so if it does not load, sign in to MyApps first and then try again.",
+      "link": "https://libguides.ncirl.ie/libraryessentials/computersandprinters",
+      "linkLabel": "Computers and printing",
+      "checked": "2026-09-28",
+      "links": [
+        "https://libguides.ncirl.ie/libraryessentials/computersandprinters",
+        "https://myapps.microsoft.com/",
+        "https://studentprint.ncirl.ie/webcentre/"
+      ]
     },
     {
       "id": "library-study-room",
@@ -931,10 +963,14 @@
         "group room",
         "low distraction"
       ],
-      "answer": "There are 8 bookable group study rooms in the library, four on the 4th floor (S4.01 for 12 students, S4.12 for 8, S4.13 for 8, S4.08 for 4) and four on the 5th floor (S5.08 for 8, S5.09 for 6, S5.10 for 4, S5.06 for 6). There are two further group rooms on the 1st floor of the Spencer Dock building outside the library, S1.12 for 6 and S1.13 for 8. You book from the study rooms page itself, using the button for the relevant room or the per-room booking links on that page, and you should use your NCI student email address when booking. During the busiest hours of 10am to 4pm Monday to Saturday you must book the room and wait for library staff to approve it, and a booking is not valid until staff approve it, at which point you get an email. Outside those hours you can still book, and you may have to give up the room to someone who booked it. Each room can be booked for a maximum of 2 hours per day per group, most rooms need a minimum of 2 students, and S4.08 and S5.10 can be used by a single student. You must check in within 5 minutes before your start time and within 15 minutes after it, using the link or QR code in your email, on Eduroam. To cancel, use the link in the confirmation email or ask at the desk. There are also four low-distraction desks in the silent study room on the 4th floor for students who find open study distracting.",
+      "answer": "There are 8 study rooms bookable in the library, plus 2 more on the 1st floor of the Spencer Dock building (S1.12 for 6 people and S1.13 for 8). Rooms on the 4th floor take 4 to 12 people and rooms on the 5th floor take 4 to 8. During the busiest hours, 10am to 4pm Monday to Saturday, you must book the room and wait for library staff to approve it, and you must complete every field on the booking form or the request is denied. You must check in from 5 minutes before to 15 minutes after your start time, using the link in your confirmation email or the QR code on the desk, or the booking is cancelled. You must be on Eduroam Wi-Fi to check in, and you should check out if you leave early. If you need somewhere quieter, the library also has 4 low-distraction desks in the silent study room on the 4th floor.",
       "link": "https://libguides.ncirl.ie/libraryessentials/groupstudyrooms",
-      "linkLabel": "NCI Library: Group Study Rooms",
-      "checked": "2026-09-28"
+      "linkLabel": "Group study rooms",
+      "checked": "2026-09-28",
+      "links": [
+        "https://libguides.ncirl.ie/libraryessentials/groupstudyrooms",
+        "https://libguides.ncirl.ie/libraryessentials/openinghoursaccess"
+      ]
     },
     {
       "id": "msc-dissertation",
@@ -1006,7 +1042,7 @@
         "cost",
         "guests"
       ],
-      "answer": "To be eligible to graduate you must have successfully completed all modules in your programme and your marks must be presented and confirmed at an exam board, be in good standing on fees, and be clear to progress. You cannot move on to the next stage of your programme until every module from the current stage is passed, so an unresolved result blocks graduation. Results are published on MyDetails, and you are emailed when they are available. The next NCI Winter Graduation is on Thursday 22 October 2026 in the Convention Centre Dublin. Tickets cost 65 euro and include gown hire plus entry for two guests, and each student may only buy one. Collect your gown from the Kelly Theatre between 3pm and 7pm on 20 October, or at the Convention Centre up to an hour before your ceremony on the day. All ceremonies are livestreamed. Email graduation@ncirl.ie with any questions, and if you cannot attend, contact the Graduation team about collecting your certificate separately.",
+      "answer": "To graduate you have to complete your programme requirements and confirm your details in MyDetails, so check that your final results and any outstanding fees are cleared. Students who finish in June or in September and October are invited to the Winter graduation ceremony, which is held in the Convention Centre Dublin. The next Winter ceremony is on 22 October 2026. Ceremonies are livestreamed and recordings are published afterwards. If you think you are missing credit, have not passed an exit interview, or need a confirmation letter, contact Academic Operations.",
       "link": "https://www.ncirl.ie/Graduation-Information",
       "linkLabel": "NCI Graduation Information",
       "checked": "2026-09-28"
@@ -1076,6 +1112,226 @@
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Results-Information",
       "linkLabel": "NCI Exam Results Information",
       "checked": "2026-09-28"
+    },
+    {
+      "id": "seats-attendance",
+      "question": "How do I check in to my class with the SEAtS app?",
+      "category": "Attendance and engagement",
+      "answer": "NCI uses the SEAtS app to record attendance. All full-time undergraduate and postgraduate students studying on campus must log attendance for in-person classes. Download SEAtS Mobile from the App Store or Google Play, log in with your NCI student email address and password, and grant all the permissions it asks for, including Bluetooth, location, camera and notifications. Open your Calendar in the app, find the class and tap Check In. The app searches for a nearby classroom beacon and logs you in. If check-in keeps failing, contact attendance@ncirl.ie.",
+      "link": "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/24805781522076-SEAtS-Student-User-Guide",
+      "linkLabel": "SEAtS student user guide",
+      "variants": [
+        "Do I have to attend every class?",
+        "How is my attendance recorded?",
+        "Do I need to check in to class?",
+        "What is the attendance app?",
+        "Do I get an attendance warning?",
+        "how does attendance work",
+        "does attendance matter",
+        "how is attendance taken"
+      ],
+      "keywords": [
+        "seats",
+        "attendance",
+        "check in",
+        "log attendance",
+        "attendance requirement",
+        "app",
+        "present",
+        "engagement",
+        "beacon",
+        "class",
+        "must attend",
+        "mark attendance"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "late-submission-penalty",
+      "question": "What happens if I submit my assignment late?",
+      "category": "Assessment",
+      "answer": "Late coursework is penalised at 5% of the awarded mark for each calendar day it is late, up to a maximum deduction of 100%. The penalty applies only to the specific item that is late, not to your overall module grade. Nothing is accepted after the date of the relevant Examination Board, and work submitted after that date is treated as a non-submission and given a mark of zero. If you already have an approved extension, the penalty runs from the expiry of the extended deadline. To appeal, contact the Office of the Registrar at registrarsoffice@ncirl.ie.",
+      "link": "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/24313322890524-Late-Submission-of-Coursework-Policy",
+      "linkLabel": "Late submission of coursework policy",
+      "variants": [
+        "Will I lose marks for a late submission?",
+        "How much is deducted per day late?",
+        "What is the late penalty?",
+        "Can I appeal a late submission penalty?"
+      ],
+      "keywords": [
+        "late",
+        "penalty",
+        "late submission",
+        "overdue",
+        "plagiarism",
+        "5%",
+        "zero",
+        "mark deducted"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "exam-deferral",
+      "question": "Can I defer an exam?",
+      "category": "Exams and results",
+      "answer": "Yes. You can request a deferral for your full programme, for a single module, or for a single assessment, and for a repeat assessment, by submitting the request through NCI360. There are no fees for a deferral request. The Exams Team handles the request and will confirm the outcome, so if you have not heard back, or you need to discuss your circumstances, email exams@ncirl.ie. A deferred assessment is rescheduled to the next sitting of that assessment. If you are an international student, tell the International Office as well, because a change to your completion date can affect your visa renewal.",
+      "link": "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/6666894872860-How-do-I-Request-an-Assessment-deferral",
+      "linkLabel": "How do I request an assessment deferral",
+      "variants": [
+        "What if I cannot sit my exam?",
+        "Can I postpone an exam?",
+        "I missed my exam, what do I do?",
+        "How do I defer my degree?"
+      ],
+      "keywords": [
+        "defer",
+        "deferral",
+        "postpone",
+        "reschedule exam",
+        "miss exam",
+        "sick",
+        "no show"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "repeat-exam",
+      "question": "What happens if I fail a module, and can I repeat it?",
+      "category": "Exams and results",
+      "answer": "If you fail a module at your first attempt you can repeat that assessment or exam at the next repeat sitting, which is called repeat by assessment. You do not have to retake the whole course. September starters sit repeat exams in August. If you fail both at your first attempt and at the resit, you have to repeat by attending classes the following academic year. If the module counts towards your final award, your grade for it is capped at a Pass, 40%, after a repeat, but this capped grade does not limit your overall award classification. Repeats are not free: there is a registration fee plus a fee per module. You also cannot repeat a module you have already passed just to get a better mark.",
+      "link": "https://www.ncirl.ie/Students/Exams/Repeat-Registration",
+      "linkLabel": "Repeat registration",
+      "variants": [
+        "Can I repeat a module I failed?",
+        "What is a repeat year?",
+        "Is my grade capped after repeating?",
+        "Do I have to redo the whole course?",
+        "How much does a repeat cost?"
+      ],
+      "keywords": [
+        "repeat",
+        "resit",
+        "fail",
+        "failed module",
+        "grade cap",
+        "deferred entry",
+        "repeat sitting"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "academic-operations",
+      "question": "How do I contact Academic Operations?",
+      "category": "People and contacts",
+      "answer": "Academic Operations runs the Support Hub on the ground floor of the Mayor Square building. Online support is available from 8am to 6:30pm Monday to Thursday and 8am to 5pm on Friday. Walk-in appointments run 9am to 4pm Monday to Friday. They handle assessment records, deferrals and deferral requests, repeat registration, exam results queries, graduation and confirmation letters, and changes to your registration such as adding or dropping a module.",
+      "link": "https://www.ncirl.ie/Students/Academic-Operations",
+      "linkLabel": "Academic Operations",
+      "variants": [
+        "Who do I contact about my grades?",
+        "What are Academic Operations hours?",
+        "Where do I go for a student services appointment?",
+        "How do I get a confirmation letter?"
+      ],
+      "keywords": [
+        "academic operations",
+        "support hub",
+        "registrar",
+        "student records",
+        "walk in",
+        "hours"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "support-hub",
+      "question": "What is the NCI Support Hub?",
+      "category": "People and contacts",
+      "answer": "The Support Hub is NCI's main student services point, on the ground floor of the Mayor Square building. It is the first place to go for anything you are not sure about, and staff can point you to the right team rather than leaving you to guess. The NCI Library, Academic Operations and IT support all sit within or alongside it. If you have a question that is not in this assistant, this is the right place to get an authoritative answer.",
+      "link": "https://ncisupporthub.ncirl.ie/hc/en-ie",
+      "linkLabel": "NCI Support Hub",
+      "variants": [
+        "Where do I go if I need help?",
+        "What is the Support Hub?",
+        "Who can answer my question?",
+        "who can I talk to about a problem",
+        "I need help with something",
+        "where do I go for help",
+        "how do I get help",
+        "where do I go if I need help"
+      ],
+      "keywords": [
+        "support hub",
+        "help",
+        "help desk",
+        "student services",
+        "front desk",
+        "who do i ask",
+        "who can i talk to",
+        "where do i go",
+        "advice",
+        "enquiries",
+        "assistance"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "student-systems",
+      "question": "What are the main student systems and how do I log in?",
+      "category": "IT and access",
+      "answer": "All of your main systems use the same NCI student email address and password, in the form x12345678@student.ncirl.ie. Moodle is at moodle2026.ncirl.ie and holds your course pages, lecture material, assignment submissions and your timetable. MyApps is the Microsoft 365 portal for free Office, Teams and the software catalogue. NCI360 is where you make official requests, including extensions, deferrals and repeats. MyDetails is where your personal details, fees and enrolment are held. The Support Hub knowledge base is at ncisupporthub.ncirl.ie. If you are locked out of any of them, reset your password first, then contact IT support if it still fails.",
+      "link": "https://www.ncirl.ie/Students/Current-Students-Hub",
+      "linkLabel": "Current students hub",
+      "variants": [
+        "What is my student username?",
+        "Where do I find my details?",
+        "How do I log in to my student account?",
+        "What is NCI360?",
+        "What is MyApps?",
+        "Where is my timetable?"
+      ],
+      "keywords": [
+        "moodle",
+        "myapps",
+        "nci360",
+        "mydetails",
+        "login",
+        "portal",
+        "username",
+        "systems"
+      ],
+      "checked": "2026-09-28"
+    },
+    {
+      "id": "counselling-wellbeing",
+      "question": "Where can I get help if I am struggling?",
+      "category": "Wellbeing and support",
+      "answer": "If you are feeling overwhelmed, anxious or low, please talk to someone. NCI's Student Counselling and Wellness Service is the right first step, and you can book an appointment directly through their page. They also support issues such as eating disorders, addiction or substance use, confidence and self-esteem, and LGBTQIA+ support. You can also see your programme co-ordinator or the Students' Union, and NCI's Student Support Services FAQ covers the practical side. If something is affecting your studies, tell someone early, because support is much easier to arrange before a deadline. In an emergency, or if you or someone else is in immediate danger, contact emergency services.",
+      "link": "https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Counselling-Wellness-Service",
+      "linkLabel": "Student Counselling and Wellness Service",
+      "variants": [
+        "I am struggling, who can I talk to?",
+        "I feel anxious about my studies",
+        "Is counselling free?",
+        "I am not coping, what should I do?",
+        "Who can I talk to about mental health?"
+      ],
+      "keywords": [
+        "counselling",
+        "counseling",
+        "wellbeing",
+        "mental health",
+        "stress",
+        "anxious",
+        "support",
+        "sad"
+      ],
+      "checked": "2026-09-28",
+      "links": [
+        "https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Counselling-Wellness-Service",
+        "https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Health",
+        "https://www.ncirl.ie/Students/Student-Services/Student-Support-Services-FAQ"
+      ]
     }
   ]
 }
