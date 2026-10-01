@@ -174,3 +174,12 @@ HTTP 403 is reported as a warning rather than a failure, because
 
 Search text is scrubbed in the browser and again on the server, so student
 numbers, email addresses and passwords never reach the sheet.
+
+## Current status
+
+| Feature | State |
+| --- | --- |
+| Knowledge base, 40 entries | Live |
+| "Suggest a question" Google Form | Live, pre-filled with the student's own question |
+| Popular-questions list | Browser-local only until `statsEndpoint` is set |
+| Scheduled link checking | Live, weekly |

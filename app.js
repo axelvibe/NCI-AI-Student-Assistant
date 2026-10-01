@@ -32,11 +32,12 @@ const CONFIG = {
 
   // Google Form for "suggest a missing question". Use the /edit link.
   // Leave as "" and the button will point at NCI Support Hub instead.
-  suggestionFormUrl: '',
+  suggestionFormUrl:
+    'https://docs.google.com/forms/d/e/1FAIpQLSfDC7AjYX_bNs3dj_3oghmwpfyeHQRxcLBIaAn2v5iLAPr_PQ/edit?usp=sharing',
 
   // Name of the Google Form field that receives the suggested question.
   // Optional. Only used if suggestionFormUrl is set.
-  suggestionFieldName: 'entry.1000000',
+  suggestionFieldName: 'entry.1608898430',
 
   supportHubUrl: 'https://ncisupporthub.ncirl.ie/hc/en-ie',
   studentServicesUrl: 'https://www.ncirl.ie/Students/Student-Services',
@@ -661,7 +662,8 @@ function setupSuggestionLink(query) {
   }
   const url = new URL(CONFIG.suggestionFormUrl);
   if (CONFIG.suggestionFieldName && query) {
-    url.searchParams.set(CONFIG.suggestionFieldName, query);
+    // prefill the question the student actually typed
+    url.searchParams.set(CONFIG.suggestionFieldName, redactForStats(query).slice(0, 200));
   }
   els.suggestLink.href = url.toString();
   els.suggestLink.textContent = 'Suggest a question';
