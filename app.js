@@ -30,6 +30,17 @@ const CONFIG = {
   // Leave as "" to keep search counts in the browser only.
   statsEndpoint: '',
 
+  // Apps Script proxy. Serves the AI, the anonymous log and the feedback
+  // controls. Empty "" = AI off, everything else works exactly as before.
+  aiEndpoint: '',
+
+  // How many matched entries to send the AI as its permitted sources.
+  aiCandidateLimit: 3,
+
+  // Trims each entry's answer to this length before sending, to keep the
+  // request small and the model focused.
+  aiEntryChars: 520,
+
   // Google Form for "suggest a missing question". Use the /edit link.
   // Leave as "" and the button will point at NCI Support Hub instead.
   suggestionFormUrl:
@@ -43,6 +54,175 @@ const CONFIG = {
   studentServicesUrl: 'https://www.ncirl.ie/Students/Student-Services',
   nciHomeUrl: 'https://www.ncirl.ie'
 };
+
+// ---------------------------------------------------------------------
+//   AI LAYER
+//
+//   The deterministic matcher above still decides WHICH entries are
+//   relevant. The AI then composes the answer from only those entries.
+//
+//   The AI call goes to our own Apps Script proxy, never to OpenAI
+//   directly: the API key lives in Apps Script, so it cannot be read out
+//   of the page source.
+//
+//   If the proxy is unreachable or errors, askAI() resolves to null and
+//   the page carries on showing the exact-match answer it already has.
+//   Nothing breaks, we just lose the AI wording.
+// ---------------------------------------------------------------------
+
+const AI_TIMEOUT_MS = 25000;
+let aiSeq = 0;
+
+function aiEndpointUrl(params) {
+  if (!CONFIG.aiEndpoint) return null;
+  const url = new URL(CONFIG.aiEndpoint);
+  Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+  return url.toString();
+}
+
+/** Trim an entry down to what the model actually needs. */
+function entryForModel(entry, score) {
+  return {
+    q: entry.question,
+    a: entry.answer.length > CONFIG.aiEntryChars
+      ? entry.answer.slice(0, CONFIG.aiEntryChars).replace(/\s+\S*$/, '') + '.'
+      : entry.answer,
+    url: entry.link,
+    title: entry.linkLabel || 'Official NCI page',
+    score: Math.round((score || 0) * 100)
+  };
+}
+
+// JSONP, because Apps Script redirects /exec to a googleusercontent.com URL
+// and the browser is then blocked from reading the response by CORS. A script
+// tag sidesteps that. The callback name is randomised per request so two
+// searches in flight cannot collide.
+function jsonp(url, timeoutMs) {
+  return new Promise(resolve => {
+    const name = '__nciAi' + Date.now() + '_' + (aiSeq++);
+    const script = document.createElement('script');
+    let done = false;
+
+    const finish = value => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      try { delete window[name]; } catch (e) { window[name] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve(value);
+    };
+
+    const timer = setTimeout(() => finish(null), timeoutMs || AI_TIMEOUT_MS);
+
+    window[name] = data => finish(data);
+    script.onerror = () => finish(null);
+    script.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'callback=' + name;
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Ask the proxy to answer from the given entries.
+ * Resolves to { answer, sources } or null if unavailable.
+ */
+async function askAI(question, entries) {
+  const url = aiEndpointUrl({
+    q: redactForStats(question).slice(0, 300),
+    entries: JSON.stringify(entries.map(e => entryForModel(e.entry, e.score)))
+  });
+  if (!url) return null;
+
+  let payload;
+  try {
+    payload = await jsonp(url);
+  } catch (e) {
+    return null;
+  }
+  if (!payload || payload.ok !== true || !payload.answered) return null;
+  if (typeof payload.answer !== 'string' || !payload.answer.trim()) return null;
+
+  // Only ever surface URLs the model was actually given.
+  const allowed = new Set(entries.map(e => e.entry.link));
+  const sources = (Array.isArray(payload.sources) ? payload.sources : [])
+    .filter(s => s && allowed.has(s.url))
+    .map(s => ({ href: s.url, label: s.title || 'Official NCI page' }));
+
+  return { answer: payload.answer.trim(), sources };
+}
+
+// ---------------------------------------------------------------------
+//   FEEDBACK
+//
+//   "That helped" / "This didn't help" is the only honest signal we have
+//   for whether an answer is actually useful. It is logged anonymously.
+// ---------------------------------------------------------------------
+
+function logQuestion(question, entryId, answered) {
+  if (!CONFIG.statsEndpoint) return;
+  postJson(CONFIG.statsEndpoint, {
+    mode: 'log', question: redactForStats(question).slice(0, 200),
+    entryId: entryId || '', answered: !!answered
+  });
+}
+
+function sendFeedback(question, entryId, helpful) {
+  if (!CONFIG.statsEndpoint) return;
+  postJson(CONFIG.statsEndpoint, {
+    mode: 'feedback', question: redactForStats(question).slice(0, 200),
+    entryId: entryId || '', helpful: !!helpful
+  });
+}
+
+function postJson(url, body) {
+  try {
+    fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    }).catch(() => {});
+  } catch (e) { /* ignore */ }
+}
+
+function renderFeedback(result, query) {
+  if (!CONFIG.statsEndpoint) return null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'feedback';
+  wrap.setAttribute('role', 'group');
+  wrap.setAttribute('aria-label', 'Was this answer helpful?');
+
+  const label = document.createElement('span');
+  label.className = 'feedback-label';
+  label.textContent = 'Did this answer your question?';
+  wrap.appendChild(label);
+
+  const buttons = [
+    { yes: true, text: 'Yes, thanks' },
+    { yes: false, text: 'No, still stuck' }
+  ].map(spec => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'feedback-btn';
+    b.textContent = spec.text;
+    b.addEventListener('click', () => {
+      sendFeedback(query, result.entry.id, spec.yes);
+      buttons.forEach(o => { o.setAttribute('disabled', 'disabled'); });
+      wrap.classList.add('done');
+      thanks.textContent = spec.yes
+        ? 'Thanks - that helps us know what is working.'
+        : 'Thanks. We will add this to the list of things to write up.';
+    });
+    return b;
+  });
+
+  const thanks = document.createElement('span');
+  thanks.className = 'feedback-thanks';
+
+  buttons.forEach(b => wrap.appendChild(b));
+  wrap.appendChild(thanks);
+  return wrap;
+}
 
 /* ---------------------------------------------------------------------
    2. SMALL HELPERS
@@ -876,10 +1056,14 @@ function handleAsk(query, isFollowUp) {
   if (result.matched) {
     renderMatch(result, q);
     recordSearch(q, result.entry.id);
+    try { logQuestion(q, result.entry.id, false); } catch (e) {}
+    try { enhanceWithAI(q, result); } catch (e) {}
   } else {
     renderNoMatch(q, result);
     showSuggestionBlock(q);
     recordSearch(q, '');
+    try { logQuestion(q, '', true); } catch (e) {}
+    try { tryAIOnNoMatch(q, result); } catch (e) {}
   }
 
   if (!isFollowUp) {

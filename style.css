@@ -431,3 +431,67 @@ mark { background: #ffe9a8; padding: 0 1px; border-radius: 2px; }
   background: #f1f9f4;
 }
 .card.wellbeing h2 { color: #145c39; }
+
+/* ---- AI layer ---- */
+.ai-status {
+  margin: 14px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted, #5b6b7b);
+  font-style: italic;
+}
+.ai-badge {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef2fb;
+  border: 1px solid #c6d2ee;
+  color: #33407a;
+  font-size: 0.74rem;
+  letter-spacing: 0.01em;
+}
+p.answer.ai-answer {
+  white-space: pre-line;
+}
+
+/* ---- "did this help?" ---- */
+.feedback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #dfe4ea);
+  border-radius: 10px;
+  background: var(--card-bg, #fbfcfd);
+}
+.feedback-label {
+  font-size: 0.9rem;
+  color: var(--muted, #5b6b7b);
+  margin-right: 4px;
+}
+.feedback-btn {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line, #dfe4ea);
+  background: #fff;
+  color: var(--ink, #1d2733);
+  cursor: pointer;
+}
+.feedback-btn:hover:not([disabled]) {
+  border-color: #9fb4d8;
+  background: #f2f6fd;
+}
+.feedback-btn[disabled] { opacity: 0.55; cursor: default; }
+.feedback-thanks {
+  font-size: 0.84rem;
+  color: #1f7a4d;
+}
+.feedback.done .feedback-label { opacity: 0.6; }
+@media (prefers-reduced-motion: no-preference) {
+  .ai-status { animation: aiPulse 1.4s ease-in-out infinite; }
+  @keyframes aiPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+}
