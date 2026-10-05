@@ -92,11 +92,11 @@ function doGet(e) {
       model: MODEL,
       searches: rows('Searches'),
       digest: rows(DIGEST_SHEET)
-    });
-    if (mode === 'digest') return json({ ok: true, items: digest() });
-    return answer(p);
+    }, p.callback);
+    if (mode === 'digest') return json({ ok: true, items: digest() }, p.callback);
+    return answer(p, p.callback);
   } catch (err) {
-    return json({ ok: false, error: String(err) });
+    return json({ ok: false, error: String(err) }, (e.parameter&&e.parameter.callback)||"");
   }
 }
 
@@ -106,26 +106,26 @@ function doPost(e) {
   try {
     var raw = (e && e.postData && e.postData.contents) || '';
     var data = JSON.parse(raw || '{}');
-    if (data.mode === 'feedback') return json({ ok: true, feedback: feedback(data) });
-    if (data.mode === 'log') return json({ ok: true, logged: logQuestion(data) });
-    return json({ ok: false, error: 'unknown mode' });
+    if (data.mode === 'feedback') return json({ ok: true, feedback: feedback(data) }, (e.parameter&&e.parameter.callback)||"");
+    if (data.mode === 'log') return json({ ok: true, logged: logQuestion(data) }, (e.parameter&&e.parameter.callback)||"");
+    return json({ ok: false, error: 'unknown mode' }, (e.parameter&&e.parameter.callback)||"");
   } catch (err) {
-    return json({ ok: false, error: String(err) });
+    return json({ ok: false, error: String(err) }, (e.parameter&&e.parameter.callback)||"");
   }
 }
 
 /* --------------------------------------------------------------- answering */
 
-function answer(p) {
+function answer(p, cb) {
   var question = scrub(String(p.q || '')).slice(0, QUESTION_CHARS);
-  if (!question) return json({ ok: false, error: 'empty question' });
+  if (!question) return json({ ok: false, error: 'empty question' }, cb);
 
   var entries = parseEntries(p.entries).slice(0, MAX_ENTRIES);
   if (!entries.length) {
-    return json({ ok: true, answered: false, answer: '', reason: 'no entries' });
+    return json({ ok: true, answered: false, answer: '', reason: 'no entries' }, cb);
   }
   if (!hasApiKey()) {
-    return json({ ok: false, error: 'no api key', fallback: true });
+    return json({ ok: false, error: 'no api key', fallback: true }, cb);
   }
 
   var numbered = entries.map(function (en, i) {
@@ -154,10 +154,10 @@ function answer(p) {
     { role: 'user', content: userMessage }
   ]);
 
-  if (!res.ok) return json({ ok: false, error: res.error, fallback: true });
+  if (!res.ok) return json({ ok: false, error: res.error, fallback: true }, cb);
 
   var text = String(res.text || '').trim();
-  if (!text) return json({ ok: false, error: 'empty completion', fallback: true });
+  if (!text) return json({ ok: false, error: 'empty completion', fallback: true }, cb);
 
   // Only surface sources the model was actually given.
   var sources = entries.map(function (en) {
@@ -170,7 +170,7 @@ function answer(p) {
     answer: text.slice(0, 2500),
     sources: sources,
     model: MODEL
-  });
+  }, cb);
 }
 
 function callOpenAI(messages) {
@@ -300,9 +300,14 @@ function refreshDigestTab() {
 
 /* ---------------------------------------------------------------- helpers */
 
-function json(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+function json(obj, callback) {
+  var cb = callback || "";
+  var data = JSON.stringify(obj);
+  if (cb) {
+    data = cb + "(" + data + ");";
+    return ContentService.createTextOutput(data).setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(data).setMimeType(ContentService.MimeType.JSON);
 }
 
 function ss() {
