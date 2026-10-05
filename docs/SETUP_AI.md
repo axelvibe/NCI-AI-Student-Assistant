@@ -29,3 +29,6 @@ This adds a grounded AI answer while keeping the API key off the public page.
 ## 5) Send the URL to me
 Send that `/exec` URL to me. I will set `aiEndpoint` to it in app.js, commit and redeploy.
 Once live, AI answers appear only when the matcher finds relevant entries and the AI sticks to them.
+
+## Tip: if the "Run -> setApiKey" option doesn't appear
+In Apps Script, make sure you're looking at the `Proxy.gs` file (or that you've saved it). The function runs once from the editor's Run dropdown. If Apps Script asks for authorisation, click "Review permissions" -> choose your account -> "Advanced" -> "Go to (unsafe)" if needed, then allow.
