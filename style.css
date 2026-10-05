@@ -495,3 +495,52 @@ p.answer.ai-answer {
   .ai-status { animation: aiPulse 1.4s ease-in-out infinite; }
   @keyframes aiPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 }
+
+/* Journeys and quick questions */
+.journeys,
+.quick-questions {
+  margin: 1rem 0 1.25rem;
+}
+
+.journeys h2,
+.quick-questions h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.journey-grid,
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.journey-card,
+.quick-btn {
+  background: #f7f3fb;
+  border: 1px solid #e3d7ef;
+  color: #2d1537;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.25;
+}
+
+.journey-card:hover,
+.journey-card:focus,
+.quick-btn:hover,
+.quick-btn:focus {
+  background: #f0e9f7;
+  border-color: #c9b3de;
+  outline: 2px solid #7a4fbf;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .journey-card,
+  .quick-btn {
+    width: 100%;
+  }
+}
