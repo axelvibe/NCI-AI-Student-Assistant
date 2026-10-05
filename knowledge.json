@@ -64,7 +64,20 @@
       "answer": "For 2026/27, Semester 1 classes run Monday 14 September 2026 to Saturday 12 December 2026. Semester 2 runs Monday 18 January 2027 to Saturday 24 April 2027. Semester 3 (May to August) runs Monday 17 May 2027 to Saturday 7 August 2027. NCI runs its academic year from September to August. If you started in January 2027 your Semester 1 is 18 January to 24 April 2027. Check the academic calendar regularly because dates are indicative and can change.",
       "link": "https://www.ncirl.ie/Students/Current-Students-Hub/Academic-Calendar",
       "linkLabel": "NCI Academic Calendar",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Academic Calendar",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "When does the semester start and finish?",
+        "semester start date",
+        "when do classes begin and end",
+        "teaching dates this year"
+      ]
     },
     {
       "id": "reading-week",
@@ -91,7 +104,20 @@
       "answer": "Semester 1 reading week is Monday 26 October to Saturday 31 October 2026, with no classes and no new Springboard or ICT Skillnet sessions. Semester 2 reading week is Monday 15 March to Saturday 20 March 2027, also with no classes. Saturday classes resume the following day. Note that Monday 26 October 2026 is the October Bank Holiday, so NCI is closed that day. The calendar is indicative and can change, so check the page before you plan around it.",
       "link": "https://www.ncirl.ie/Students/Current-Students-Hub/Academic-Calendar",
       "linkLabel": "NCI Academic Calendar",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Academic Calendar",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "When is reading week?",
+        "reading week commencing date",
+        "when are there no classes",
+        "study week dates"
+      ]
     },
     {
       "id": "assignment-due-date",
@@ -121,7 +147,20 @@
       "answer": "Assignment due dates are set per module, so there is no single college-wide deadline. The authoritative date is the one in your assignment brief on the module page in Moodle, together with the module descriptor. A small number of MSc programmes run a dissertation or project in the June to August period with a submission due in August, so check your programme handbook as well. I cannot see module briefs from here, so please read the brief on Moodle.",
       "link": "https://moodle2026.ncirl.ie/",
       "linkLabel": "NCI Moodle (module page for your brief)",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Moodle (module page for your brief)",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "What is the deadline for my assignment?",
+        "assignment submission deadline",
+        "when is my coursework due",
+        "deadline for my project"
+      ]
     },
     {
       "id": "referencing-style",
@@ -149,7 +188,20 @@
       "answer": "NCI uses three referencing styles. Harvard is the most widely used, across most School of Business courses and some School of Computing modules. APA is used by Psychology, Education and Learning and Teaching students. IEEE is used in some School of Computing modules. Harvard is an author-date system: you put a short (Author, Year) citation in the text and a full reference in a list titled References, in alphabetical order by author surname and with no numbering. Every in-text citation must match a reference list entry and vice versa. Always confirm the exact style your module requires with your lecturer.",
       "link": "https://libguides.ncirl.ie/referencingandavoidingplagiarism",
       "linkLabel": "NCI Referencing and Avoiding Plagiarism guide",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Referencing and Avoiding Plagiarism guide",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "How do I reference correctly?",
+        "What is the referencing style used at NCI?",
+        "Harvard or APA or IEEE?",
+        "how do I cite sources in my assignment"
+      ]
     },
     {
       "id": "exam-when-where",
@@ -174,7 +226,20 @@
       "answer": "Exams run in three main periods each year. For 2026/27 they are Semester 1 from 5 to 16 January 2027, Semester 2 from 4 to 22 May 2027, and Semester 3 and repeat exams from 3 to 21 August 2027. Each exam takes place either on the Mayor Square campus in NCI or on Moodle, and the location is decided per paper rather than for the whole session. Morning, afternoon and evening sessions are all used, so check your programme's timetable carefully for the exact date, time and room. You cannot request a change of exam date or time, and alternative arrangements are not available, so attend the location shown on the timetable.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Timetable",
       "linkLabel": "NCI Exam Timetable",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Exam Timetable",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "What time is my exam?",
+        "where do I sit my exam?",
+        "is my exam online or on campus",
+        "exam venue and date"
+      ]
     },
     {
       "id": "assignment-word-count",
@@ -202,7 +267,20 @@
       "answer": "There is no college-wide word count. Each module sets its own word count and assessment weighting, so the number you must meet is the one in your assignment brief on Moodle and in the module descriptor. Some published examples: the BA (Hons) Psychology final year project dissertation runs 6,000 to 8,000 words, and Level 9 dissertations follow the specification in the Postgraduate Dissertation Handbook for your school. I am not going to invent a number for your module, so please check the brief.",
       "link": "https://www.ncirl.ie/Students/Academic-Operations",
       "linkLabel": "NCI Module Descriptors",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Module Descriptors",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how many words does my assignment need",
+        "word limit for my essay",
+        "how long should my assignment be",
+        "word count requirement"
+      ]
     },
     {
       "id": "assignment-extension",
@@ -233,7 +311,20 @@
       "answer": "Extensions are only considered in exceptional circumstances and you must provide evidence. Submit the request through NCI360, and allow for the standard 7 working days, or up to 14 where there is good reason. Send the request at least 5 days before the original submission deadline, because an extension cannot be granted retrospectively. Approvals are recorded in your assessment plan, and you should get written confirmation before you assume the new date applies.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Deferrals",
       "linkLabel": "NCI Exam Deferrals and Extensions",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Exam Deferrals and Extensions",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how do I get more time for my assignment",
+        "request a coursework extension",
+        "I need an extension on my deadline",
+        "how do I ask for a re-run"
+      ]
     },
     {
       "id": "resit-exam",
@@ -267,6 +358,19 @@
       "links": [
         "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/24283834704028-Assessment-Resits-Policy-and-Procedure",
         "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/6666894872860-How-do-I-Request-an-Assessment-deferral"
+      ],
+      "title": "NCI Exam Deferrals",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how do I repeat an exam",
+        "what happens if I fail an exam",
+        "repeat sitting process",
+        "when can I resit"
       ]
     },
     {
@@ -294,7 +398,20 @@
       "answer": "Results are published after each exam session has concluded, and you check them by logging in to the MyDetails area once the published date for your session has passed. The most recently published dates were for Semester 3 2025/26: for PGD and Masters programmes results went live on MyDetails on 25 September 2026, the deadline for Review and Recheck forms was 1 October 2026, and exam reviews took place on 5 October 2026. Undergraduate programmes were 9 September 2026, with rechecks by 11 September and reviews on 15 September 2026. NCI states these dates are provisional and subject to change, and reviews are for completed programmes only, so always take the exact date for your session from the Exam Results Information page.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Results-Information",
       "linkLabel": "NCI Exam Results Information",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Exam Results Information",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "when do results go live",
+        "results release date",
+        "how long until I get my grades",
+        "when do marks come out"
+      ]
     },
     {
       "id": "programme-coordinator",
@@ -328,7 +445,20 @@
       "answer": "NCI says your programme co-ordinator's details are on your course page in Moodle, so check there first. To contact them, submit a request to Academic Operations through the NCI Support Hub, and it is routed automatically to the right programme co-ordinator. Academic Operations also manage the day-to-day of your programme. I deliberately do not store staff names or any personal details in this assistant, so please use the official routes above to get the current, correct person for your programme.",
       "link": "https://www.ncirl.ie/Students/Academic-Operations",
       "linkLabel": "NCI A-Z Staff Directory",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI A-Z Staff Directory",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "programme coordinator contact",
+        "who should I talk to about my course",
+        "academic operations contact",
+        "my course leader"
+      ]
     },
     {
       "id": "moodle-access",
@@ -359,7 +489,20 @@
       "answer": "Go to https://moodle2026.ncirl.ie/ and sign in with Single Sign On using the same NCI credentials you use everywhere else: your username in the format x12345678@student.ncirl.ie and your NCI password. The same credentials also work for MyDetails, Office 365, Wi-Fi and the virtual desktop, so you only ever have one password. If you cannot log in, reset it first at https://password.ncirl.ie/ , and if the account is locked after too many wrong attempts, the Password Management service will unlock it as well.",
       "link": "https://moodle2026.ncirl.ie/",
       "linkLabel": "NCI Moodle",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Moodle",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "moodle login",
+        "how do I get into moodle",
+        "my moodle account",
+        "vle login"
+      ]
     },
     {
       "id": "lecture-material",
@@ -397,6 +540,19 @@
         "https://www.ncirl.ie/Students/Current-Students-Hub",
         "https://libguides.ncirl.ie/subjectandlibraryguides",
         "https://courses.ncirl.ie/"
+      ],
+      "title": "NCI Moodle",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "where are my lecture slides",
+        "find my class notes",
+        "lecture recordings and notes",
+        "course resources location"
       ]
     },
     {
@@ -427,7 +583,20 @@
       "answer": "Open your module page in Moodle, go to the assessment you are submitting, click the submission link and upload your file. Many assignments are submitted through Turnitin, which is linked from the same page; if your work has security settings or is password protected, remove them before uploading or the file will not open for your marker. You get an automatic submission receipt, so always check that you receive one and check your uploaded file opens correctly. If the upload fails, take a screenshot and contact the module lecturer or Student Services the same day. I cannot see the per-module upload link, so please use the one in your Moodle module page.",
       "link": "https://moodle2026.ncirl.ie/",
       "linkLabel": "NCI Moodle",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Moodle",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how to upload my assignment",
+        "turnitin submission",
+        "submit my work on moodle",
+        "assignment upload instructions"
+      ]
     },
     {
       "id": "register-on-seat",
@@ -462,7 +631,20 @@
       "answer": "Online registration for returning full-time and part-time students opens in July 2026. Registration is done by paying your fees through MyDetails: sign in to the MyApps portal at https://myapps.microsoft.com/ with your NCI credentials (x12345678@student.ncirl.ie) and open the myDetails app. You must have paid the required amount before the date of your first class, or access to college services is affected, meaning you will not be able to log in to online classrooms, borrow books from the library, and a late registration charge will be applied. If you are not in receipt of a SUSI grant you must pay at least 20% of the Student Contribution Fee to register, plus the 80 euro gym fee. Part-time Masters students moving from first to second year are rolled over automatically and will be notified by email. Cash is no longer accepted on campus and American Express is not accepted.",
       "link": "https://www.ncirl.ie/Students/Registration-Information/Returning-Students",
       "linkLabel": "NCI Returning Students Registration",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Returning Students Registration",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how do I re-register",
+        "returning student registration",
+        "how do I pay my fees to register",
+        "how do I confirm my place"
+      ]
     },
     {
       "id": "reference-letter",
@@ -491,7 +673,20 @@
       "answer": "You can self-generate most student letters yourself. Sign in to NCI360 at https://nci360.ncirl.ie/ and use the Student Letter Hub, which gives you a registration or reference letter and a letter that can be used as proof of address. You must be a fully registered student and your home and mailing address must be up to date on MyDetails; if you changed your address today, wait until tomorrow because the system can take up to 24 hours to update. If you need a character or academic reference, email academicoperations@ncirl.ie. Immigration letters are issued by the International Office instead. The Exams Office cannot discuss your results with anyone other than you.",
       "link": "https://ncisupporthub.ncirl.ie/hc/en-ie/articles/5389074658204-How-do-I-request-a-letter",
       "linkLabel": "NCI Support Hub: How do I request a letter?",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Support Hub: How do I request a letter?",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how do I get a reference letter",
+        "I need proof of my student status",
+        "academic reference request",
+        "confidential reference for an employer"
+      ]
     },
     {
       "id": "library-online-access",
@@ -528,6 +723,19 @@
       "links": [
         "https://libguides.ncirl.ie/libraryessentials/onlinelibraryresources",
         "https://libguides.ncirl.ie/libraryessentials/openinghoursaccess"
+      ],
+      "title": "NCI Library home",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "library e-resources",
+        "online library login",
+        "access ebooks and databases",
+        "library catalogue access"
       ]
     },
     {
@@ -571,6 +779,19 @@
       "links": [
         "https://libguides.ncirl.ie/libraryessentials/borrowingrenewingbooks",
         "https://libguides.ncirl.ie/libraryessentials/openinghoursaccess"
+      ],
+      "title": "Borrowing and renewing books",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "how do I get a library book",
+        "library loans for postgraduates",
+        "do I need a student card to borrow",
+        "how long can I keep a book"
       ]
     },
     {
@@ -607,7 +828,22 @@
       "answer": "If nobody else has requested your book, the due date renews automatically for another loan period. You can also renew in person, online through your library account, or by email. If every copy is out you can reserve it and it will be held at the information desk for 5 business days. Return books at the drop box in the ground floor lobby in Spencer Dock or at a self-service machine. Fines are EUR 1 per item per day overdue, and if you reach EUR 10 or more your account is blocked until you pay. The library is cashless and takes debit or credit card only, and fines under EUR 10 across the whole course do not need to be paid.",
       "link": "https://libguides.ncirl.ie/libraryessentials/borrowingrenewingbooks",
       "linkLabel": "Borrowing and renewing books",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "Borrowing and renewing books",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "renew my books",
+        "can I keep the book longer",
+        "automatic renewal",
+        "book renewal rules",
+        "how do I renew a book I borrowed",
+        "borrowing and renewing"
+      ]
     },
     {
       "id": "tuition-fee",
@@ -650,6 +886,19 @@
         "https://www.ncirl.ie/Study/Fees-and-Grants",
         "https://www.ncirl.ie/Courses/NCI-Course-Details/course/MSCAIBUS",
         "https://www.ncirl.ie/Study/Fees-and-Grants/Direct-Debit-Plan"
+      ],
+      "title": "Fees and grants",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "what are my fees",
+        "cost of my masters",
+        "fee instalment plan",
+        "how do I pay my tuition"
       ]
     },
     {
@@ -688,7 +937,21 @@
       "answer": "Yes. NCI runs a range of scholarships, grants and discounts, and the live list with deadlines and how to apply is on the Scholarships and Discounts page. The postgraduate schemes for September 2026 entry included the Master's Edge Scholarship, which is 25% off a full-time, day-time Masters or Postgraduate Diploma for qualified NCI students and alumni; a full Irish Refugee Council postgraduate scholarship for one candidate; the 30% Club scholarship, which gives two fully funded places, one in the School of Business and Social Sciences and one in the School of Computing; and a 1,000 euro discount for NCI students and alumni. Those deadlines were in May, June and August 2026 and have now passed, so treat them as the pattern rather than as an open application, and check the page for the current round. Note that scholarships cannot be combined, so only the scholarship of highest value is awarded, and that the Master's Edge is daytime only while the 30% Club covers full-time and part-time study. Many of these are not available to students paying international fees, who have a separate scholarship portfolio. Separately from scholarships, if you are in receipt of a SUSI grant you may qualify for the Free Fees Initiative. If money is the barrier to you studying, talk to Student Services about the Student Assistance Fund, the Fund for Students with Disabilities, the emergency hardship fund for international students, and the option of paying by direct debit.",
       "link": "https://www.ncirl.ie/Scholarships",
       "linkLabel": "NCI Scholarships and Discounts",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Scholarships and Discounts",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "can I get a scholarship",
+        "funding or bursary",
+        "financial hardship support",
+        "student assistance fund",
+        "grant money"
+      ]
     },
     {
       "id": "clubs-societies",
@@ -725,6 +988,19 @@
       "links": [
         "https://ncisu.ie/clubs-societies/",
         "https://www.ncirl.ie/Students/Sports-Recreation/Clubs-and-Societies"
+      ],
+      "title": "Clubs and societies",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "student societies list",
+        "is there a sports club",
+        "how do I join a society",
+        "extra-curricular activities"
       ]
     },
     {
@@ -754,7 +1030,20 @@
       "answer": "Orientation takes place before your course starts and covers your programme, the college services and campus life. For part-time and Masters students it is held online in one session via Microsoft Teams, with the date and time for each course listed on the part-time registration and orientation page, and you receive the joining link by email about 48 hours beforehand. Install the Teams app and log in with your NCI username in the format x12345678@student.ncirl.ie. Full-time first years have several in-person sessions in the week before classes begin. All listed dates are indicative and can change. If you cannot attend, email orientation@ncirl.ie.",
       "link": "https://www.ncirl.ie/Students/Registration-Information/New-Students/Part-Time-Registration-and-Orientation",
       "linkLabel": "NCI Part-Time Registration and Orientation",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Part-Time Registration and Orientation",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "induction session",
+        "new student welcome session",
+        "do I have to attend orientation",
+        "orientation dates and times"
+      ]
     },
     {
       "id": "career-services",
@@ -787,7 +1076,20 @@
       "answer": "The easiest route is email the Careers Team at ncicareersteam@ncirl.ie. The Career Development and Employability Service supports CVs, cover letters, interview technique, online presence and career planning, and you can book an appointment with a Careers Advisor. The team page at https://www.ncirl.ie/Students/Careers/About-Us/Meet-the-Team lists each advisor and the programmes they cover, so you can go straight to the right person. Current students also get free unlimited access to LinkedIn Learning through the MyApps portal.",
       "link": "https://www.ncirl.ie/careers",
       "linkLabel": "NCI Career Development and Employability Service",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Career Development and Employability Service",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "careers office contact details",
+        "career advice appointment",
+        "who can help with my CV",
+        "contact the careers team"
+      ]
     },
     {
       "id": "internship-placement",
@@ -818,7 +1120,20 @@
       "answer": "Some MSc programmes include a work placement as a graded part of the degree. The School of Computing placement programmes run for 12 weeks, either May to August or September to December, and include MSc in Cybersecurity, MSc in Artificial Intelligence, MSc in AI for Business, MSc in Data Analytics and MSc in FinTech. On these placements students typically work four days a week in the company and attend class at NCI on the fifth day, so confirm your own pattern with the Careers Team. Whether a placement is a formal credit-bearing part of your programme or something you arrange yourself depends on your course, so check the Courses with Work Placement page for your programme or ask your programme co-ordinator. Independently of that, the NCI online jobs board is updated daily with jobs and placements employers have sent in, and it is accessed from MyApps using your NCI login. Email ncicareersteam@ncirl.ie to talk it through.",
       "link": "https://www.ncirl.ie/Students/Careers/Work-Placement/Courses-with-Work-Placement",
       "linkLabel": "NCI Courses with Work Placement",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Courses with Work Placement",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "work placement",
+        "how do I find an internship",
+        "is there a placement year",
+        "industry placement for masters students"
+      ]
     },
     {
       "id": "reset-password",
@@ -849,7 +1164,20 @@
       "answer": "Go to https://password.ncirl.ie/ and choose the option that fits: Sign up for SSPR to register self-service password reset, Reset Password if you have forgotten it, or Change Password if you know your current one. This is the same password you use for Moodle, MyDetails, Office 365 and Wi-Fi, so resetting it updates everything at once. If you enter it incorrectly several times your IT account is locked, and the Password Management service is also what unlocks it. If you cannot recover it yourself, raise a ticket with IT through the NCI Support Hub at https://ncisupporthub.ncirl.ie/hc/en-ie .",
       "link": "https://password.ncirl.ie/",
       "linkLabel": "NCI Password Management",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Password Management",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "I forgot my password",
+        "change my password",
+        "my account is locked",
+        "password reset self service"
+      ]
     },
     {
       "id": "wifi-access",
@@ -887,7 +1215,20 @@
       "answer": "Select the network named eduroam on your device and sign in with your NCI credentials: username x12345678@student.ncirl.ie and your NCI password. eduroam is the international research and education roaming network, so the same username and password also work at thousands of other participating universities worldwide, which is useful if you are travelling. On Android 8 or later and on iPhone, the easiest method is to install the free geteduroam app, search for National College of Ireland, choose National College of Ireland IE, then log in and select Join. On Windows set security to WPA2 Enterprise, authentication to PEAP, and the domain to ncirl.ie. If it fails, forget the network on your device to clear any cached password, reset your password, and contact itupport@ncirl.ie if it still will not connect.",
       "link": "https://www.ncirl.ie/Students/Student-Services/IT-Services/eduroam",
       "linkLabel": "NCI eduroam Wi-Fi",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI eduroam Wi-Fi",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "eduroam login",
+        "wireless network on campus",
+        "internet connection in college",
+        "wifi not working"
+      ]
     },
     {
       "id": "free-software",
@@ -930,6 +1271,19 @@
         "https://libguides.ncirl.ie/libraryessentials/computersandprinters",
         "https://myapps.microsoft.com/",
         "https://studentprint.ncirl.ie/webcentre/"
+      ],
+      "title": "Computers and printing",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "software licences for students",
+        "install office on my laptop",
+        "free developer tools",
+        "what apps do I get access to"
       ]
     },
     {
@@ -970,6 +1324,19 @@
       "links": [
         "https://libguides.ncirl.ie/libraryessentials/groupstudyrooms",
         "https://libguides.ncirl.ie/libraryessentials/openinghoursaccess"
+      ],
+      "title": "Group study rooms",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "group study room booking",
+        "book a room in the library",
+        "quiet desk in the library",
+        "silent study space"
       ]
     },
     {
@@ -1011,7 +1378,21 @@
       "answer": "The dissertation is independent research of your own topic, and the exact requirements are set by your programme's handbook, not by the college as a whole. The minimum requirements for a Level 9 dissertation are published in the Dissertation Submission Specifications and the School of Business Postgraduate Dissertation Handbook, both linked from the library's Thesis and Final Year Project Submission Guide. In summary you submit electronically through Moodle (Turnitin), a hard copy is no longer required, you must complete and sign the Submission of Thesis and Declaration form and attach it, you must turn off any file security before uploading, and an approved electronic copy is then deposited in the library repository NORMA. You are allocated a supervisor. Some programmes set the dissertation due date in August after the taught modules finish, so check your programme handbook and your module page in Moodle. Turnitin also generates the report for checking similarity and AI use, so submit well before the deadline and do not leave generating the report to the last minute.",
       "link": "https://libguides.ncirl.ie/thesisguide",
       "linkLabel": "NCI Library: Thesis and Final Year Project Submission Guide",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Library: Thesis and Final Year Project Submission Guide",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "thesis requirements",
+        "how long is my dissertation",
+        "when do I submit my dissertation",
+        "dissertation word count and structure",
+        "final year project requirements"
+      ]
     },
     {
       "id": "graduation-requirements",
@@ -1045,7 +1426,20 @@
       "answer": "To graduate you have to complete your programme requirements and confirm your details in MyDetails, so check that your final results and any outstanding fees are cleared. Students who finish in June or in September and October are invited to the Winter graduation ceremony, which is held in the Convention Centre Dublin. The next Winter ceremony is on 22 October 2026. Ceremonies are livestreamed and recordings are published afterwards. If you think you are missing credit, have not passed an exit interview, or need a confirmation letter, contact Academic Operations.",
       "link": "https://www.ncirl.ie/Graduation-Information",
       "linkLabel": "NCI Graduation Information",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Graduation Information",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "when is my graduation ceremony",
+        "graduation ticket and gown",
+        "how do I collect my certificate",
+        "what are the graduation requirements"
+      ]
     },
     {
       "id": "exam-timetable",
@@ -1078,7 +1472,20 @@
       "answer": "The exam timetable is published per programme on the Exam Timetable page, with separate PDF timetables for each exam block. For 2025/26 the published blocks were Semester One 5 to 16 January 2026, Semester Two 5 to 23 May 2026, and Autumn or Repeat 4 to 22 August 2026, with the Sem 2 and August timetables available as PDFs by programme. Exams are either on campus at the Spencer Dock campus or online in Moodle, and the location is shown in the timetable. You must attend the location shown because alternative arrangements are not available. Students are not permitted to request changes to exam dates or times, and the Exams Office may change the timetable, so check it regularly, ideally daily. Full-time and part-time students are expected to sit morning, afternoon and evening sessions.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Timetable",
       "linkLabel": "NCI Exam Timetable",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Exam Timetable",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "exam timetable download",
+        "my exam schedule pdf",
+        "when is my paper",
+        "examination timetable by programme"
+      ]
     },
     {
       "id": "exam-results",
@@ -1111,7 +1518,20 @@
       "answer": "Sign in to MyDetails, which you reach from the MyApps portal, and open the Results section. Your MyDetails shows your overall grade plus a breakdown of each individual module. Current students can also download their results there, and graduating students receive a final transcript by email once their course is complete. If you have completed every module but no overall result is showing, log a ticket with the Exams Office through the NCI Support Hub. If you cannot log in at all and your account is in good standing, use the IT Services guides. If you have outstanding fees your results will be withheld, so contact the Fees Office. If you believe there is an error, raise it with the Exams Office or your programme co-ordinator immediately after publication, as there are fixed deadlines for Recheck (after each results release) and Exam Review (which requires a full set of results for a programme stage). The Exams Office cannot discuss your results with anyone other than you, under data protection law.",
       "link": "https://www.ncirl.ie/Students/Exams/Exam-Results-Information",
       "linkLabel": "NCI Exam Results Information",
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Exam Results Information",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "where can I see my grades",
+        "view my results on MyDetails",
+        "recheck or review my result",
+        "I cannot see my results"
+      ]
     },
     {
       "id": "seats-attendance",
@@ -1144,7 +1564,24 @@
         "must attend",
         "mark attendance"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "SEAtS student user guide",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "Do I have to attend every class?",
+        "How is my attendance recorded?",
+        "Do I need to check in to class?",
+        "What is the attendance app?",
+        "Do I get an attendance warning?",
+        "how does attendance work",
+        "does attendance matter",
+        "how is attendance taken"
+      ]
     },
     {
       "id": "late-submission-penalty",
@@ -1169,7 +1606,20 @@
         "zero",
         "mark deducted"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "Late submission of coursework policy",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "Will I lose marks for a late submission?",
+        "How much is deducted per day late?",
+        "What is the late penalty?",
+        "Can I appeal a late submission penalty?"
+      ]
     },
     {
       "id": "exam-deferral",
@@ -1193,7 +1643,20 @@
         "sick",
         "no show"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "How do I request an assessment deferral",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "What if I cannot sit my exam?",
+        "Can I postpone an exam?",
+        "I missed my exam, what do I do?",
+        "How do I defer my degree?"
+      ]
     },
     {
       "id": "repeat-exam",
@@ -1218,7 +1681,21 @@
         "deferred entry",
         "repeat sitting"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "Repeat registration",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "Can I repeat a module I failed?",
+        "What is a repeat year?",
+        "Is my grade capped after repeating?",
+        "Do I have to redo the whole course?",
+        "How much does a repeat cost?"
+      ]
     },
     {
       "id": "academic-operations",
@@ -1241,7 +1718,20 @@
         "walk in",
         "hours"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "Academic Operations",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "Who do I contact about my grades?",
+        "What are Academic Operations hours?",
+        "Where do I go for a student services appointment?",
+        "How do I get a confirmation letter?"
+      ]
     },
     {
       "id": "support-hub",
@@ -1273,7 +1763,24 @@
         "enquiries",
         "assistance"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "NCI Support Hub",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "Where do I go if I need help?",
+        "What is the Support Hub?",
+        "Who can answer my question?",
+        "who can I talk to about a problem",
+        "I need help with something",
+        "where do I go for help",
+        "how do I get help",
+        "where do I go if I need help"
+      ]
     },
     {
       "id": "student-systems",
@@ -1300,7 +1807,22 @@
         "username",
         "systems"
       ],
-      "checked": "2026-09-28"
+      "checked": "2026-09-28",
+      "title": "Current students hub",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "What is my student username?",
+        "Where do I find my details?",
+        "How do I log in to my student account?",
+        "What is NCI360?",
+        "What is MyApps?",
+        "Where is my timetable?"
+      ]
     },
     {
       "id": "counselling-wellbeing",
@@ -1331,6 +1853,20 @@
         "https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Counselling-Wellness-Service",
         "https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Health",
         "https://www.ncirl.ie/Students/Student-Services/Student-Support-Services-FAQ"
+      ],
+      "title": "Student Counselling and Wellness Service",
+      "relatedTopics": [],
+      "supportDestination": "NCI Support Hub",
+      "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
+      "sourceAuthority": "Official NCI website",
+      "lastVerified": "2026-09-28",
+      "reviewAfter": "",
+      "questionPatterns": [
+        "I am struggling, who can I talk to?",
+        "I feel anxious about my studies",
+        "Is counselling free?",
+        "I am not coping, what should I do?",
+        "Who can I talk to about mental health?"
       ]
     }
   ]
