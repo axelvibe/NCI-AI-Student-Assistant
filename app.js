@@ -1270,6 +1270,7 @@ function handleAsk(query, isFollowUp) {
    --------------------------------------------------------------------- */
 async function init() {
   els.form.addEventListener('submit', function (ev) {
+    try{console.log('[NCI DEBUG] form submit intercepted');}catch(e){}
     ev.preventDefault();
     handleAsk(els.input.value);
   });
