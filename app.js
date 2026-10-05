@@ -414,6 +414,50 @@ function formatDate(iso) {
 /* ---------------------------------------------------------------------
    3. STATE
    --------------------------------------------------------------------- */
+const JOURNEY_QUESTIONS = {
+  academic: [
+    'What should I do if I miss an assignment deadline?',
+    'How do I request an extension?',
+    'What is an assessment deferral?',
+    'Where can I get academic support?',
+    'Who is my Programme Coordinator?'
+  ],
+  timetable: [
+    'When is reading week?',
+    'Where can I find my timetable?',
+    'What are the academic calendar dates?',
+    'Attendance information'
+  ],
+  exams: [
+    'When are exams?',
+    'Where can I find exam information?',
+    'What should I do if I miss an assessment deadline?'
+  ],
+  moodle: [
+    'How do I access Moodle?',
+    'Where can I find my module information?',
+    'Who do I contact if Moodle isn\'t working?'
+  ],
+  support: [
+    'How do I contact NCI Support Hub?',
+    'Who is my Programme Coordinator?',
+    'Where can I get academic support?',
+    'Student Services'
+  ],
+  fees: [
+    'Tuition fees information',
+    'Where can I find fees information?'
+  ],
+  international: [
+    'International student support',
+    'Student services'
+  ],
+  wellbeing: [
+    'Student counselling and wellbeing',
+    'Where can I get help if I\'m struggling?'
+  ]
+};
+
 const state = {
   kb: null,
   entries: [],
@@ -1072,7 +1116,26 @@ function renderFilters() {
     b.setAttribute('aria-pressed', String(cat === state.activeCategory));
     b.addEventListener('click', () => {
       state.activeCategory = cat;
-      renderFilters();
+      // Quick questions and journeys
+  document.querySelectorAll('.quick-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const q = b.dataset.q || b.textContent;
+      if (els.input) els.input.value = q;
+      handleAsk(q);
+    });
+  });
+  document.querySelectorAll('.journey-card').forEach(b => {
+    b.addEventListener('click', () => {
+      const j = b.dataset.journey;
+      const qs = (j && JOURNEY_QUESTIONS[j]) || [];
+      if (!qs.length) return;
+      // Ask the first question in journey
+      if (els.input) els.input.value = qs[0];
+      handleAsk(qs[0]);
+    });
+  });
+
+  renderFilters();
       renderEntryList();
     });
     els.filters.appendChild(b);
@@ -1172,6 +1235,25 @@ async function init() {
   }
 
   els.lastReviewed.textContent = formatDate(state.kb.meta.lastReviewed);
+
+  // Quick questions and journeys
+  document.querySelectorAll('.quick-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const q = b.dataset.q || b.textContent;
+      if (els.input) els.input.value = q;
+      handleAsk(q);
+    });
+  });
+  document.querySelectorAll('.journey-card').forEach(b => {
+    b.addEventListener('click', () => {
+      const j = b.dataset.journey;
+      const qs = (j && JOURNEY_QUESTIONS[j]) || [];
+      if (!qs.length) return;
+      // Ask the first question in journey
+      if (els.input) els.input.value = qs[0];
+      handleAsk(qs[0]);
+    });
+  });
 
   renderFilters();
   renderEntryList();
