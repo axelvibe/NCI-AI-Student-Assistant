@@ -147,7 +147,83 @@ async function askAI(question, entries) {
     .filter(s => s && allowed.has(s.url))
     .map(s => ({ href: s.url, label: s.title || 'Official NCI page' }));
 
-  return { answer: payload.answer.trim(), sources };
+  return { answer: payload.answer.trim(), sources }
+
+async function enhanceWithAI(question, result) {
+  if (!CONFIG.aiEndpoint) return null;
+  const entries = (result.ranked || []).slice(0, 3).filter(r => r.score > MATCH_THRESHOLD * 0.4);
+  if (!entries.length) return null;
+  const ai = await askAI(question, entries);
+  if (!ai || !ai.answer) return null;
+  appendAIAnswer(question, ai.answer, ai.sources, false);
+  return ai;
+}
+
+async function tryAIOnNoMatch(question, result) {
+  if (!CONFIG.aiEndpoint) return null;
+  const entries = (result.ranked || []).slice(0, 5).filter(r => r.score > MATCH_THRESHOLD * 0.3);
+  const ai = await askAI(question, entries);
+  if (!ai || !ai.answer) return null;
+  appendAIAnswer(question, ai.answer, ai.sources, true);
+  return ai;
+}
+
+function appendAIAnswer(question, answerText, sources, isNoMatch) {
+  const card = document.createElement('div');
+  card.className = 'card ai-card';
+  
+  const badge = document.createElement('span');
+  badge.className = 'ai-badge';
+  badge.textContent = 'Answered by AI (grounded in NCI sources)';
+  card.appendChild(badge);
+  
+  const h = document.createElement('h2');
+  h.textContent = question.length > 60 ? question.slice(0, 57) + '...' : question;
+  card.appendChild(h);
+  
+  const p = document.createElement('p');
+  p.className = 'answer';
+  p.textContent = answerText;
+  card.appendChild(p);
+  
+  if (Array.isArray(sources) && sources.length) {
+    const srcWrap = document.createElement('div');
+    srcWrap.className = 'sources';
+    const label = document.createElement('span');
+    label.className = 'sources-label';
+    label.textContent = 'Sources:';
+    srcWrap.appendChild(label);
+    const ul = document.createElement('ul');
+    sources.forEach(s => {
+      if (!s || !s.href) return;
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = s.href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = s.label || 'Official NCI page';
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    srcWrap.appendChild(ul);
+    card.appendChild(srcWrap);
+  }
+  
+  const caveat = document.createElement('p');
+  caveat.className = 'caveat';
+  caveat.textContent = 'Please confirm on the official NCI page, as dates and policies can change.';
+  card.appendChild(caveat);
+  
+  const fb = renderFeedback({ entry: { id: '' } }, question);
+  if (fb) card.appendChild(fb);
+  
+  const wellbeing = renderWellbeing(question);
+  if (wellbeing) card.appendChild(wellbeing);
+  
+  els.answer.appendChild(card);
+}
+
+;
 }
 
 // ---------------------------------------------------------------------
