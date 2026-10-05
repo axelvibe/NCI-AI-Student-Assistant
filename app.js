@@ -443,7 +443,7 @@ function formatDate(iso) {
 /* ---------------------------------------------------------------------
    3. STATE
    --------------------------------------------------------------------- */
-const const CONVERSATION = {
+const CONVERSATION = {
   lastQuestion: '',
   lastEntryId: '',
   lastTopic: ''
@@ -1174,7 +1174,7 @@ function renderFilters() {
   lastTopic: ''
 };
 
-const JOURNEY_QUESTIONS[j]) || [];
+      const qs = (j && JOURNEY_QUESTIONS[j]) || [];
       if (!qs.length) return;
       // Ask the first question in journey
       if (els.input) els.input.value = qs[0];
@@ -1306,7 +1306,7 @@ async function init() {
   lastTopic: ''
 };
 
-const JOURNEY_QUESTIONS[j]) || [];
+      const qs = (j && JOURNEY_QUESTIONS[j]) || [];
       if (!qs.length) return;
       // Ask the first question in journey
       if (els.input) els.input.value = qs[0];
