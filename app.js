@@ -724,6 +724,9 @@ function renderMatch(result, query) {
 
   els.answer.appendChild(card);
 
+  const fb = renderFeedback(result, query);
+  if (fb) els.answer.appendChild(fb);
+
   const wellbeing = renderWellbeing(query);
   if (wellbeing) els.answer.appendChild(wellbeing);
 
@@ -806,6 +809,9 @@ function renderNoMatch(query, result) {
   }
 
   els.answer.appendChild(card);
+
+  const fb = renderFeedback(result, query);
+  if (fb) els.answer.appendChild(fb);
 
   const wellbeing = renderWellbeing(query);
   if (wellbeing) els.answer.appendChild(wellbeing);
