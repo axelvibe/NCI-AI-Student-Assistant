@@ -544,3 +544,44 @@ p.answer.ai-answer {
     width: 100%;
   }
 }
+
+/* Next action and related */
+.next-action,
+.related {
+  background: #f9f6fc;
+  border: 1px solid #e6dcf3;
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  margin: 0.75rem 0 0;
+}
+
+.next-action h3,
+.related h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.related ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.related-btn {
+  background: #fff;
+  border: 1px solid #d8c7e7;
+  color: #2d1537;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.related-btn:hover,
+.related-btn:focus {
+  background: #f3ecfb;
+  outline: 2px solid #7a4fbf;
+  outline-offset: 2px;
+}
