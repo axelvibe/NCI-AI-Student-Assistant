@@ -300,6 +300,35 @@ function renderFeedback(result, query) {
   return wrap;
 }
 
+function renderRelated(result) {
+  if (!result || !result.entry) return null;
+  const rel = Array.isArray(result.entry.relatedTopics) ? result.entry.relatedTopics : [];
+  if (rel.length === 0) return null;
+  const wrap = document.createElement('div');
+  wrap.className = 'related';
+  const h = document.createElement('h3');
+  h.textContent = 'You may also want to know:';
+  wrap.appendChild(h);
+  const ul = document.createElement('ul');
+  rel.slice(0, 4).forEach(qt => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'related-btn';
+    b.textContent = qt;
+    b.addEventListener('click', () => {
+      if (els.input) els.input.value = qt;
+      handleAsk(qt);
+    });
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+  wrap.appendChild(ul);
+  return wrap;
+}
+
+
+
 /* ---------------------------------------------------------------------
    2. SMALL HELPERS
    --------------------------------------------------------------------- */
@@ -414,6 +443,12 @@ function formatDate(iso) {
 /* ---------------------------------------------------------------------
    3. STATE
    --------------------------------------------------------------------- */
+const const CONVERSATION = {
+  lastQuestion: '',
+  lastEntryId: '',
+  lastTopic: ''
+};
+
 const JOURNEY_QUESTIONS = {
   academic: [
     'What should I do if I miss an assignment deadline?',
@@ -865,6 +900,12 @@ function renderMatch(result, query) {
     });
     els.answer.appendChild(also);
   }
+
+  const na = renderNextAction(e);
+  if (na) els.answer.appendChild(na);
+
+  const rel = renderRelated(result);
+  if (rel) els.answer.appendChild(rel);
 }
 
 function renderNoMatch(query, result) {
@@ -1127,7 +1168,13 @@ function renderFilters() {
   document.querySelectorAll('.journey-card').forEach(b => {
     b.addEventListener('click', () => {
       const j = b.dataset.journey;
-      const qs = (j && JOURNEY_QUESTIONS[j]) || [];
+      const qs = (j && const CONVERSATION = {
+  lastQuestion: '',
+  lastEntryId: '',
+  lastTopic: ''
+};
+
+const JOURNEY_QUESTIONS[j]) || [];
       if (!qs.length) return;
       // Ask the first question in journey
       if (els.input) els.input.value = qs[0];
@@ -1247,7 +1294,13 @@ async function init() {
   document.querySelectorAll('.journey-card').forEach(b => {
     b.addEventListener('click', () => {
       const j = b.dataset.journey;
-      const qs = (j && JOURNEY_QUESTIONS[j]) || [];
+      const qs = (j && const CONVERSATION = {
+  lastQuestion: '',
+  lastEntryId: '',
+  lastTopic: ''
+};
+
+const JOURNEY_QUESTIONS[j]) || [];
       if (!qs.length) return;
       // Ask the first question in journey
       if (els.input) els.input.value = qs[0];
@@ -1263,3 +1316,25 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+
+function renderNextAction(entry) {
+  if (!entry) return null;
+  const wrap = document.createElement('div');
+  wrap.className = 'next-action';
+  const h = document.createElement('h3');
+  h.textContent = 'What to do next';
+  wrap.appendChild(h);
+  const p = document.createElement('p');
+  p.className = 'answer';
+  p.textContent = entry.nextAction || 'Check the official NCI page linked below and contact the relevant service if unsure.';
+  wrap.appendChild(p);
+  if (entry.supportDestination) {
+    const sd = document.createElement('p');
+    sd.className = 'hint';
+    sd.textContent = 'Where to go: ' + entry.supportDestination;
+    wrap.appendChild(sd);
+  }
+  return wrap;
+}
+
