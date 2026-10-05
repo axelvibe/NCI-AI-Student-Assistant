@@ -1168,12 +1168,6 @@ function renderFilters() {
   document.querySelectorAll('.journey-card').forEach(b => {
     b.addEventListener('click', () => {
       const j = b.dataset.journey;
-      const qs = (j && const CONVERSATION = {
-  lastQuestion: '',
-  lastEntryId: '',
-  lastTopic: ''
-};
-
       const qs = (j && JOURNEY_QUESTIONS[j]) || [];
       if (!qs.length) return;
       // Ask the first question in journey
@@ -1300,12 +1294,6 @@ async function init() {
   document.querySelectorAll('.journey-card').forEach(b => {
     b.addEventListener('click', () => {
       const j = b.dataset.journey;
-      const qs = (j && const CONVERSATION = {
-  lastQuestion: '',
-  lastEntryId: '',
-  lastTopic: ''
-};
-
       const qs = (j && JOURNEY_QUESTIONS[j]) || [];
       if (!qs.length) return;
       // Ask the first question in journey
