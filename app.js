@@ -1227,10 +1227,12 @@ function renderEntryList() {
    10. MAIN QUERY HANDLER
    --------------------------------------------------------------------- */
 function handleAsk(query, isFollowUp) {
+  try { console.log("[NCI DEBUG] handleAsk called:", query); } catch(e){}
   const q = String(query || '').trim();
-  if (!q) return;
+  if (!q) { try { console.log("[NCI DEBUG] empty query, returning"); } catch(e){}; return; }
 
   const result = search(q);
+  try { console.log("[NCI DEBUG] search result:", {matched: result && result.matched, score: result && result.score, entryId: result && result.entry && result.entry.id}); } catch(e){}
   hideSuggestionBlock();
 
   if (!result) {
@@ -1243,19 +1245,19 @@ function handleAsk(query, isFollowUp) {
     CONVERSATION.lastQuestion = q;
     CONVERSATION.lastEntryId = result.entry.id;
     CONVERSATION.lastTopic = result.entry.category || '';
-    renderMatch(result, q);
+    try { console.log("[NCI DEBUG] rendering match"); } catch(e){} renderMatch(result, q);
     recordSearch(q, result.entry.id);
     try { logQuestion(q, result.entry.id, false); } catch (e) {}
-    try { enhanceWithAI(q, result); } catch (e) {}
+    try { console.log("[NCI DEBUG] calling enhanceWithAI"); enhanceWithAI(q, result); } catch (e) { try{console.error("[NCI DEBUG] enhance error", e);}catch(ee){} }
   } else {
     CONVERSATION.lastQuestion = q;
     CONVERSATION.lastEntryId = '';
     CONVERSATION.lastTopic = '';
-    renderNoMatch(q, result);
+    try { console.log("[NCI DEBUG] rendering no match"); } catch(e){} renderNoMatch(q, result);
     showSuggestionBlock(q);
     recordSearch(q, '');
     try { logQuestion(q, '', true); } catch (e) {}
-    try { tryAIOnNoMatch(q, result); } catch (e) {}
+    try { console.log("[NCI DEBUG] calling tryAIOnNoMatch"); tryAIOnNoMatch(q, result); } catch (e) { try{console.error("[NCI DEBUG] tryAI error", e);}catch(ee){} }
   }
 
   if (!isFollowUp) {
