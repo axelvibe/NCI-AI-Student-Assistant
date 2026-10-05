@@ -1318,6 +1318,11 @@ const JOURNEY_QUESTIONS[j]) || [];
 document.addEventListener('DOMContentLoaded', init);
 
 
+function isDistressQuery(q) {
+  const t = String(q || '').toLowerCase();
+  const keys = ['suicid', 'self harm', 'self-harm', 'depress', 'anxiet', 'panic', 'abuse', 'lonely', 'crisis', 'hopeless'];
+  return keys.some(k => t.includes(k));
+}
 function renderNextAction(entry) {
   if (!entry) return null;
   const wrap = document.createElement('div');
