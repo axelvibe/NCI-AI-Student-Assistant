@@ -1269,6 +1269,7 @@ function handleAsk(query, isFollowUp) {
    11. START
    --------------------------------------------------------------------- */
 async function init() {
+  try{console.log("[NCI DEBUG] init starting");}catch(e){}
   els.form.addEventListener('submit', function (ev) {
     try{console.log('[NCI DEBUG] form submit intercepted');}catch(e){}
     ev.preventDefault();
