@@ -810,8 +810,8 @@ function renderNoMatch(query, result) {
 
   els.answer.appendChild(card);
 
-  const fb = renderFeedback(result, query);
-  if (fb) els.answer.appendChild(fb);
+  const feedback = renderFeedback(result, query);
+  if (feedback) els.answer.appendChild(feedback);
 
   const wellbeing = renderWellbeing(query);
   if (wellbeing) els.answer.appendChild(wellbeing);
