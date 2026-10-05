@@ -1246,11 +1246,17 @@ function handleAsk(query, isFollowUp) {
   }
 
   if (result.matched) {
+    CONVERSATION.lastQuestion = q;
+    CONVERSATION.lastEntryId = result.entry.id;
+    CONVERSATION.lastTopic = result.entry.category || '';
     renderMatch(result, q);
     recordSearch(q, result.entry.id);
     try { logQuestion(q, result.entry.id, false); } catch (e) {}
     try { enhanceWithAI(q, result); } catch (e) {}
   } else {
+    CONVERSATION.lastQuestion = q;
+    CONVERSATION.lastEntryId = '';
+    CONVERSATION.lastTopic = '';
     renderNoMatch(q, result);
     showSuggestionBlock(q);
     recordSearch(q, '');
