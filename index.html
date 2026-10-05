@@ -12,7 +12,7 @@
 <header class="site-header">
   <div class="wrap">
     <h1>NCI Student Information Assistant</h1>
-    <p class="tagline">Quick answers for MSc students, taken from the public NCI website. Every answer links to the official page.</p>
+    <p class="tagline">How can I help you today? Quick, interactive answers for MSc students at NCI. Every answer links to the official source.</p>
   </div>
 </header>
 
@@ -24,17 +24,43 @@
       id="question"
       name="question"
       type="text"
-      placeholder="Ask a question, e.g. when is reading week?"
+      placeholder="Ask anything about NCI (e.g. 'What do I need to do if I missed an assignment deadline?')"
       aria-describedby="input-hint"
       required>
     <button id="ask-button" type="submit">Ask</button>
   </form>
   <p id="input-hint" class="hint">
-    This assistant only answers from a fixed knowledge base. If it does not know, it will say so.
+    This assistant uses verified NCI information. If it cannot verify an answer, it will say so and direct you to official NCI channels.
   </p>
 
+  <section id="journeys" class="journeys" aria-labelledby="journeys-heading">
+    <h2 id="journeys-heading">Popular student journeys</h2>
+    <div class="journey-grid">
+      <button class="journey-card" data-journey="academic">Academic &amp; Assignments</button>
+      <button class="journey-card" data-journey="timetable">Timetables &amp; Classes</button>
+      <button class="journey-card" data-journey="exams">Exams &amp; Assessments</button>
+      <button class="journey-card" data-journey="moodle">Moodle &amp; Student Systems</button>
+      <button class="journey-card" data-journey="support">Student Support</button>
+      <button class="journey-card" data-journey="fees">Fees &amp; Administration</button>
+      <button class="journey-card" data-journey="international">International Student Support</button>
+      <button class="journey-card" data-journey="wellbeing">Wellbeing &amp; Personal Support</button>
+    </div>
+  </section>
+
+  <section id="quick-questions" class="quick-questions" aria-labelledby="quick-heading">
+    <h2 id="quick-heading">Quick questions</h2>
+    <div class="quick-grid">
+      <button class="quick-btn" data-q="How do I access Moodle?">How do I access Moodle?</button>
+      <button class="quick-btn" data-q="When is reading week?">When is reading week?</button>
+      <button class="quick-btn" data-q="Who do I contact about my programme?">Who do I contact about my programme?</button>
+      <button class="quick-btn" data-q="What should I do if I miss an assessment deadline?">What should I do if I miss an assessment deadline?</button>
+      <button class="quick-btn" data-q="Where can I get academic support?">Where can I get academic support?</button>
+      <button class="quick-btn" data-q="How do I contact NCI Support Hub?">How do I contact NCI Support Hub?</button>
+    </div>
+  </section>
+
   <section id="answer" class="answer-area" aria-live="polite" aria-atomic="true">
-    <p class="placeholder">Type a question above to get started.</p>
+    <p class="placeholder">Type a question above or choose a journey to get started.</p>
   </section>
 
   <section id="suggest-block" class="suggest-block" hidden>
