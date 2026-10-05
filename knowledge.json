@@ -106,7 +106,11 @@
       "linkLabel": "NCI Academic Calendar",
       "checked": "2026-09-28",
       "title": "NCI Academic Calendar",
-      "relatedTopics": [],
+      "relatedTopics": [
+        "When is the academic calendar?",
+        "When are exams?",
+        "What are the key academic dates?"
+      ],
       "supportDestination": "NCI Support Hub",
       "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
       "sourceAuthority": "Official NCI website",
@@ -1765,7 +1769,11 @@
       ],
       "checked": "2026-09-28",
       "title": "NCI Support Hub",
-      "relatedTopics": [],
+      "relatedTopics": [
+        "Who is my Programme Coordinator?",
+        "How do I contact Academic Operations?",
+        "Where can I find my programme information?"
+      ],
       "supportDestination": "NCI Support Hub",
       "nextAction": "Check the official NCI page linked below and contact the relevant service if unsure.",
       "sourceAuthority": "Official NCI website",
