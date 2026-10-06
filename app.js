@@ -147,7 +147,8 @@ async function askAI(question, entries) {
     .filter(s => s && allowed.has(s.url))
     .map(s => ({ href: s.url, label: s.title || 'Official NCI page' }));
 
-  return { answer: payload.answer.trim(), sources }
+  return { answer: payload.answer.trim(), sources };
+}
 
 async function enhanceWithAI(question, result) {
   if (!CONFIG.aiEndpoint) return null;
