@@ -32,7 +32,7 @@ const CONFIG = {
 
   // Apps Script proxy. Serves the AI, the anonymous log and the feedback
   // controls. Empty "" = AI off, everything else works exactly as before.
-  aiEndpoint: 'https://script.google.com/macros/s/AKfycbyCQZGEZL8FQLliNYmhy8rvj-vLp7-QBbmseNqS3xBQ2Ow9qeeRNtQvaOcXTN1Cqotqnw/exec',
+  aiEndpoint: 'https://script.google.com/macros/s/AKfycbxS_LS_U-BrKKEHt5HKC_9y3bQGgqtY3MWcmJGhDccxEUwOdmycP2HKuWGaJLJHUx6Fsg/exec',
 
   // How many matched entries to send the AI as its permitted sources.
   aiCandidateLimit: 3,
