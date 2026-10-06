@@ -126,9 +126,11 @@ function jsonp(url, timeoutMs) {
  * Resolves to { answer, sources } or null if unavailable.
  */
 async function askAI(question, entries) {
+  const history = Array.isArray(CONVERSATION.history) ? CONVERSATION.history.slice(-6) : [];
   const url = aiEndpointUrl({
     q: redactForStats(question).slice(0, 300),
-    entries: JSON.stringify(entries.map(e => entryForModel(e.entry, e.score)))
+    entries: JSON.stringify(entries.map(e => entryForModel(e.entry, e.score))),
+    history: JSON.stringify(history)
   });
   if (!url) return null;
 
@@ -229,6 +231,11 @@ function appendAIAnswer(question, answerText, sources, isNoMatch) {
   if (wellbeing) card.appendChild(wellbeing);
   
   try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
+  try {
+    CONVERSATION.history.push({role: "user", content: redactForStats(question).slice(0, 200)});
+    CONVERSATION.history.push({role: "assistant", content: String(answerText).slice(0, 500)});
+    if (CONVERSATION.history.length > 12) CONVERSATION.history = CONVERSATION.history.slice(-12);
+  } catch(e){}
 }
 
 ;
@@ -453,7 +460,8 @@ function formatDate(iso) {
 const CONVERSATION = {
   lastQuestion: '',
   lastEntryId: '',
-  lastTopic: ''
+  lastTopic: '',
+  history: []
 };
 
 const JOURNEY_QUESTIONS = {
@@ -1001,6 +1009,11 @@ function renderError(message) {
   a.textContent = 'Go to the NCI website ↗';
   card.append(h, p, a);
   try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
+  try {
+    CONVERSATION.history.push({role: "user", content: redactForStats(question).slice(0, 200)});
+    CONVERSATION.history.push({role: "assistant", content: String(answerText).slice(0, 500)});
+    if (CONVERSATION.history.length > 12) CONVERSATION.history = CONVERSATION.history.slice(-12);
+  } catch(e){}
 }
 
 /* ---------------------------------------------------------------------

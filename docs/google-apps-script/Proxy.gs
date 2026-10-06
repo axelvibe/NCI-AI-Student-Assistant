@@ -128,6 +128,13 @@ function answer(p, cb) {
     return json({ ok: false, error: 'no api key', fallback: true }, cb);
   }
 
+  var history = [];
+  try {
+    history = JSON.parse(p.history || '[]');
+    if (!Array.isArray(history)) history = [];
+  } catch (e) { history = []; }
+  var histLines = history.slice(-4).map(function(x){var r=x.role||""; var c=String(x.content||"").slice(0,100); return r+": "+c;}).join("\n");
+
   var numbered = entries.map(function (en, i) {
     return [
       'ENTRY ' + (i + 1),
