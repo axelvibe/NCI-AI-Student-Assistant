@@ -134,11 +134,14 @@ async function askAI(question, entries) {
 
   let payload;
   try {
+    try{console.log("[NCI DEBUG] jsonp calling:", url.substring(0,80));}catch(e){}
     payload = await jsonp(url);
+    try{console.log("[NCI DEBUG] jsonp got:", payload);}catch(e){}
   } catch (e) {
+    try{console.error("[NCI DEBUG] jsonp err", e);}catch(ee){}
     return null;
   }
-  if (!payload || payload.ok !== true || !payload.answered) return null;
+  if (!payload || payload.ok !== true || payload.answered !== true) { try{console.log("[NCI DEBUG] bad payload", payload);}catch(e){} return null; }
   if (typeof payload.answer !== 'string' || !payload.answer.trim()) return null;
 
   // Only ever surface URLs the model was actually given.
@@ -154,7 +157,9 @@ async function enhanceWithAI(question, result) {
   if (!CONFIG.aiEndpoint) return null;
   const entries = (result.ranked || []).slice(0, 3).filter(r => r.score > MATCH_THRESHOLD * 0.4);
   if (!entries.length) return null;
+  try{console.log("[NCI DEBUG] calling askAI");}catch(e){}
   const ai = await askAI(question, entries);
+  try{console.log("[NCI DEBUG] askAI returned:", ai);}catch(e){}
   if (!ai || !ai.answer) return null;
   appendAIAnswer(question, ai.answer, ai.sources, false);
   return ai;
@@ -163,7 +168,9 @@ async function enhanceWithAI(question, result) {
 async function tryAIOnNoMatch(question, result) {
   if (!CONFIG.aiEndpoint) return null;
   const entries = (result.ranked || []).slice(0, 5).filter(r => r.score > MATCH_THRESHOLD * 0.3);
+  try{console.log("[NCI DEBUG] calling askAI");}catch(e){}
   const ai = await askAI(question, entries);
+  try{console.log("[NCI DEBUG] askAI returned:", ai);}catch(e){}
   if (!ai || !ai.answer) return null;
   appendAIAnswer(question, ai.answer, ai.sources, true);
   return ai;
