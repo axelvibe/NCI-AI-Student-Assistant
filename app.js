@@ -126,7 +126,7 @@ function jsonp(url, timeoutMs) {
  * Resolves to { answer, sources } or null if unavailable.
  */
 async function askAI(question, entries) {
-  const history = Array.isArray(CONVERSATION.history) ? CONVERSATION.history.slice(-6) : [];
+  const history = Array.isArray(CONVERSATION.history) ? CONVERSATION.history.slice(-10) : [];
   const url = aiEndpointUrl({
     q: redactForStats(question).slice(0, 300),
     entries: JSON.stringify(entries.map(e => entryForModel(e.entry, e.score))),
@@ -159,8 +159,9 @@ async function enhanceWithAI(question, result) {
   if (!CONFIG.aiEndpoint) return null;
   const entries = (result.ranked || []).slice(0, 3).filter(r => r.score > MATCH_THRESHOLD * 0.4);
   if (!entries.length) return null;
+  let typing; try{ typing = document.createElement("div"); typing.className="ai-status"; typing.textContent="Thinking..."; els.answer.appendChild(typing);}catch(e){}
   try{console.log("[NCI DEBUG] calling askAI");}catch(e){}
-  const ai = await askAI(question, entries);
+  const ai = await askAI(question, entries); try{if(typing&&typing.parentNode) typing.parentNode.removeChild(typing);}catch(e){}
   try{console.log("[NCI DEBUG] askAI returned:", ai);}catch(e){}
   if (!ai || !ai.answer) return null;
   appendAIAnswer(question, ai.answer, ai.sources, false);
@@ -170,8 +171,9 @@ async function enhanceWithAI(question, result) {
 async function tryAIOnNoMatch(question, result) {
   if (!CONFIG.aiEndpoint) return null;
   const entries = (result.ranked || []).slice(0, 5).filter(r => r.score > MATCH_THRESHOLD * 0.3);
+  let typing; try{ typing = document.createElement("div"); typing.className="ai-status"; typing.textContent="Thinking..."; els.answer.appendChild(typing);}catch(e){}
   try{console.log("[NCI DEBUG] calling askAI");}catch(e){}
-  const ai = await askAI(question, entries);
+  const ai = await askAI(question, entries); try{if(typing&&typing.parentNode) typing.parentNode.removeChild(typing);}catch(e){}
   try{console.log("[NCI DEBUG] askAI returned:", ai);}catch(e){}
   if (!ai || !ai.answer) return null;
   appendAIAnswer(question, ai.answer, ai.sources, true);
@@ -234,7 +236,7 @@ function appendAIAnswer(question, answerText, sources, isNoMatch) {
   try {
     CONVERSATION.history.push({role: "user", content: redactForStats(question).slice(0, 200)});
     CONVERSATION.history.push({role: "assistant", content: String(answerText).slice(0, 500)});
-    if (CONVERSATION.history.length > 12) CONVERSATION.history = CONVERSATION.history.slice(-12);
+    if (CONVERSATION.history.length > 20) CONVERSATION.history = CONVERSATION.history.slice(-20);
   } catch(e){}
 }
 
@@ -1012,7 +1014,7 @@ function renderError(message) {
   try {
     CONVERSATION.history.push({role: "user", content: redactForStats(question).slice(0, 200)});
     CONVERSATION.history.push({role: "assistant", content: String(answerText).slice(0, 500)});
-    if (CONVERSATION.history.length > 12) CONVERSATION.history = CONVERSATION.history.slice(-12);
+    if (CONVERSATION.history.length > 20) CONVERSATION.history = CONVERSATION.history.slice(-20);
   } catch(e){}
 }
 

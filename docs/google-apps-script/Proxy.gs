@@ -27,7 +27,7 @@
  *   3. Put the OpenAI key in Script Properties (see below), NOT in this file.
  */
 
-var MODEL = 'gpt-4o-mini';
+var MODEL = 'gpt-4o';
 var MAX_ENTRIES = 3;
 var ENTRY_CHARS = 500;
 var QUESTION_CHARS = 300;
@@ -185,7 +185,7 @@ function callOpenAI(messages) {
   var payload = {
     model: MODEL,
     messages: messages,
-    temperature: 0,          // deterministic: fewer creative excursions
+    temperature: 0.1,          // slightly more natural while grounded
     max_tokens: MAX_TOKENS
   };
   try {
