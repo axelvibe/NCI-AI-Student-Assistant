@@ -1316,6 +1316,7 @@ async function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 
+function isNode(n){try{return n&&typeof n.appendChild==="function"&&n.nodeType!==undefined;}catch(e){return false;}}
 function isDistressQuery(q) {
   const t = String(q || '').toLowerCase();
   const keys = ['suicid', 'self harm', 'self-harm', 'depress', 'anxiet', 'panic', 'abuse', 'lonely', 'crisis', 'hopeless'];
