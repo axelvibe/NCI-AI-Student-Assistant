@@ -220,7 +220,7 @@ function appendAIAnswer(question, answerText, sources, isNoMatch) {
   const wellbeing = renderWellbeing(question);
   if (wellbeing) card.appendChild(wellbeing);
   
-  els.answer.appendChild(card);
+  try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
 }
 
 ;
@@ -877,13 +877,13 @@ function renderMatch(result, query) {
   chk.textContent = 'Source checked: ' + formatDate(e.checked);
   card.appendChild(chk);
 
-  els.answer.appendChild(card);
+  try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
 
   const fb = renderFeedback(result, query);
-  if (fb) els.answer.appendChild(fb);
+  if (fb) { try{console.log("[NCI DEBUG] appending fb");}catch(e){} els.answer.appendChild(fb); }
 
   const wellbeing = renderWellbeing(query);
-  if (wellbeing) els.answer.appendChild(wellbeing);
+  if (wellbeing) { try{console.log("[NCI DEBUG] appending wellbeing");}catch(e){} els.answer.appendChild(wellbeing); }
 
   if (result.also.length) {
     const also = document.createElement('div');
@@ -902,10 +902,10 @@ function renderMatch(result, query) {
   }
 
   const na = renderNextAction(e);
-  if (na) els.answer.appendChild(na);
+  if (na) { try{console.log("[NCI DEBUG] appending na");}catch(e){} els.answer.appendChild(na); }
 
   const rel = renderRelated(result);
-  if (rel) els.answer.appendChild(rel);
+  if (rel) { try{console.log("[NCI DEBUG] appending rel");}catch(e){} els.answer.appendChild(rel); }
 }
 
 function renderNoMatch(query, result) {
@@ -969,13 +969,13 @@ function renderNoMatch(query, result) {
     card.appendChild(wrap);
   }
 
-  els.answer.appendChild(card);
+  try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
 
   const feedback = renderFeedback(result, query);
   if (feedback) els.answer.appendChild(feedback);
 
   const wellbeing = renderWellbeing(query);
-  if (wellbeing) els.answer.appendChild(wellbeing);
+  if (wellbeing) { try{console.log("[NCI DEBUG] appending wellbeing");}catch(e){} els.answer.appendChild(wellbeing); }
 }
 
 function renderError(message) {
@@ -993,7 +993,7 @@ function renderError(message) {
   a.rel = 'noopener noreferrer';
   a.textContent = 'Go to the NCI website ↗';
   card.append(h, p, a);
-  els.answer.appendChild(card);
+  try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
 }
 
 /* ---------------------------------------------------------------------
