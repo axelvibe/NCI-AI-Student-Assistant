@@ -880,10 +880,10 @@ function renderMatch(result, query) {
   try{console.log("[NCI DEBUG] about to append card to answer");}catch(e){} els.answer.appendChild(card);
 
   const fb = renderFeedback(result, query);
-  if (fb) { try{console.log("[NCI DEBUG] appending fb");}catch(e){} els.answer.appendChild(fb); }
+  if (fb && typeof fb.appendChild === "function") { try{console.log("[NCI DEBUG] appending fb");}catch(e){} els.answer.appendChild(fb); }
 
   const wellbeing = renderWellbeing(query);
-  if (wellbeing) { try{console.log("[NCI DEBUG] appending wellbeing");}catch(e){} els.answer.appendChild(wellbeing); }
+  if (wellbeing && typeof wellbeing.appendChild === "function") { try{console.log("[NCI DEBUG] appending wellbeing");}catch(e){} els.answer.appendChild(wellbeing); }
 
   if (result.also.length) {
     const also = document.createElement('div');
@@ -902,10 +902,10 @@ function renderMatch(result, query) {
   }
 
   const na = renderNextAction(e);
-  if (na) { try{console.log("[NCI DEBUG] appending na");}catch(e){} els.answer.appendChild(na); }
+  if (na && typeof na.appendChild === "function") { try{console.log("[NCI DEBUG] appending na");}catch(e){} els.answer.appendChild(na); }
 
   const rel = renderRelated(result);
-  if (rel) { try{console.log("[NCI DEBUG] appending rel");}catch(e){} els.answer.appendChild(rel); }
+  if (rel && typeof rel.appendChild === "function") { try{console.log("[NCI DEBUG] appending rel");}catch(e){} els.answer.appendChild(rel); }
 }
 
 function renderNoMatch(query, result) {
@@ -975,7 +975,7 @@ function renderNoMatch(query, result) {
   if (feedback) els.answer.appendChild(feedback);
 
   const wellbeing = renderWellbeing(query);
-  if (wellbeing) { try{console.log("[NCI DEBUG] appending wellbeing");}catch(e){} els.answer.appendChild(wellbeing); }
+  if (wellbeing && typeof wellbeing.appendChild === "function") { try{console.log("[NCI DEBUG] appending wellbeing");}catch(e){} els.answer.appendChild(wellbeing); }
 }
 
 function renderError(message) {
