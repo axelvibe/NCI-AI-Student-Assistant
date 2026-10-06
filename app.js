@@ -53,7 +53,7 @@ const CONFIG = {
   supportHubUrl: 'https://ncisupporthub.ncirl.ie/hc/en-ie',
   studentServicesUrl: 'https://www.ncirl.ie/Students/Student-Services',
   nciHomeUrl: 'https://www.ncirl.ie'
-;
+};
 
 // ---------------------------------------------------------------------
 //   AI LAYER
@@ -232,7 +232,6 @@ function appendAIAnswer(question, answerText, sources, isNoMatch) {
 }
 
 ;
-}
 
 // ---------------------------------------------------------------------
 //   FEEDBACK
