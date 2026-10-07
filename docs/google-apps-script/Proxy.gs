@@ -1,12 +1,13 @@
 /**
- * NCI Student Assistant - AI proxy, logging and feedback
+ * NCI Student Assistant - AI proxy
  * ---------------------------------------------------
  * Add this file to the SAME Apps Script project as Code.gs.
  * Deploy once: it serves all three jobs.
  *
- *   1. Answers questions with an AI model, grounded in knowledge.json entries
- *   2. Logs each question anonymously
- *   3. Accepts "that helped / this didn't help" feedback
+ *   1. Answers student questions with the OpenAI model, grounded on a list
+ *      of OFFICIAL NCI source pages supplied by the browser (sources.json).
+ *   2. Logs each question anonymously.
+ *   3. Accepts "that helped / this didn't help" feedback.
  *
  * WHY A PROXY EXISTS
  * The OpenAI key lives here, in Apps Script, and never in app.js. Anything in
@@ -28,10 +29,10 @@
  */
 
 var MODEL = 'gpt-4o';
-var MAX_ENTRIES = 3;
-var ENTRY_CHARS = 500;
-var QUESTION_CHARS = 300;
-var MAX_TOKENS = 500;
+var MAX_SOURCES = 10;       // official source pages accepted per request
+var HISTORY_TURNS = 8;      // previous messages used for conversational context
+var QUESTION_CHARS = 500;
+var MAX_TOKENS = 700;
 var OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
 // Digest tab for "what should we write next".
@@ -39,7 +40,28 @@ var DIGEST_SHEET = 'Needs content';
 
 var OPENAI_KEY_PROPERTY = 'OPENAI_API_KEY';
 
-var SYSTEM_PROMPT = "You are the student information assistant for National College of Ireland (NCI), Dublin, Ireland. You answer MSc student questions in a polite, friendly, and helpful manner.\n\nABSOLUTE RULES\n1. Use the OFFICIAL ENTRIES provided in the user message as your primary, trusted source when present. If the entries cover the question, base your answer on them.\n2. If the entries do not fully cover the question, you may draw on accurate general knowledge about NCI (courses, dates, policies, services, locations, support) from your training, but ONLY if it is publicly consistent with NCI's role. Do not invent specifics like exact dates, fees, deadlines, room numbers, or contact details unless they appear in the entries or are uncontroversial common knowledge you can state cautiously.\n3. If the question is about something you cannot confidently answer with either the entries or accurate NCI public knowledge, reply with exactly: \"I do not have that in my NCI notes yet.\" and suggest checking the NCI Support Hub (https://support.ncirl.ie/) or the relevant official NCI page.\n4. Never state a specific date, fee, deadline, policy, or contact detail that you are not confident is correct. When giving time-sensitive information, always encourage checking the official NCI page as it may change.\n5. Never invent a URL. Only reference source URLs given in the entries; if you don't have an official URL from entries, do not fabricate one.\n6. Never ask for or repeat personal details (name, student number, email, etc.). Keep it anonymous.\n7. Be concise, practical, and friendly. Use short paragraphs or bullets. No preamble, no restating the question, no sign-off.\n8. If the question suggests the student may be distressed or in difficulty, briefly point them to the Student Counselling and Wellness Service at NCI. Do not dramatise.\n9. Prioritise accuracy over completeness. When in doubt, direct them to official NCI sources.\n";
+var SUPPORT_HUB = 'https://ncisupporthub.ncirl.ie/hc/en-ie';
+
+var SYSTEM_PROMPT = [
+  'You are the NCI Student Assistant for National College of Ireland (NCI), Dublin, Ireland.',
+  'You help students and prospective students with anything about NCI and student life. Be warm, clear, concise and practical.',
+  '',
+  'SCOPE',
+  '- Answer questions about NCI and student life: admissions and courses, registration and enrolment, fees and funding, Moodle and IT, assignments and assessment, exams and results, the library, referencing, careers and work placement, clubs and societies, support and wellbeing, campus services.',
+  '- If a question is clearly unrelated to NCI or student life (for example general trivia, coding help, medical or legal advice, or another university), politely decline in one sentence and say you can only help with NCI and student questions. Do not answer off-topic questions.',
+  '',
+  'TRUTHFULNESS AND SOURCES',
+  '- You are given a list of OFFICIAL NCI SOURCES (title + URL). Treat them as ground truth. Prefer them over your own memory.',
+  '- Never invent dates, fees, deadlines, policies, room numbers, staff names, phone numbers or email addresses. If a specific detail is not in the provided sources and you are not confident it is correct, say you do not have that detail and point to the most relevant official source.',
+  '- Only link to URLs that appear in the provided official source list. Never invent or guess a URL.',
+  '- If you do not have enough information to answer, say so clearly and direct the student to the NCI Support Hub (' + SUPPORT_HUB + ').',
+  '- For time-sensitive information (dates, fees, deadlines), add a brief reminder to confirm it on the official NCI page.',
+  '',
+  'STYLE',
+  '- Keep answers short. Use a couple of short paragraphs or a few bullet points. No preamble, no restating the question, no sign-off.',
+  '- Never ask for or repeat personal details (name, student number, email, password). Keep everything anonymous.',
+  '- If the student seems distressed or in difficulty, gently and briefly point them to NCI\'s Student Counselling and Wellness Service.'
+].join('\n');
 
 
 /* ------------------------------------------------------------------ setup */
@@ -58,7 +80,7 @@ function setup() {
     dg.getRange(1, 1, 1, 3).setValues([['question', 'why', 'last_seen']]);
     dg.setFrozenRows(1);
   }
-  Logger.log('Ready. Set the API key with setApiKey("<your-key>").');
+  Logger.log('Ready. Set the API key with setApiKey().');
 }
 
 /** Run this ONCE from the editor. The key is stored in Script Properties,
@@ -96,7 +118,7 @@ function doGet(e) {
     if (mode === 'digest') return json({ ok: true, items: digest() }, p.callback);
     return answer(p, p.callback);
   } catch (err) {
-    return json({ ok: false, error: String(err) }, (e.parameter&&e.parameter.callback)||"");
+    return json({ ok: false, error: String(err) }, (e.parameter && e.parameter.callback) || "");
   }
 }
 
@@ -106,11 +128,11 @@ function doPost(e) {
   try {
     var raw = (e && e.postData && e.postData.contents) || '';
     var data = JSON.parse(raw || '{}');
-    if (data.mode === 'feedback') return json({ ok: true, feedback: feedback(data) }, (e.parameter&&e.parameter.callback)||"");
-    if (data.mode === 'log') return json({ ok: true, logged: logQuestion(data) }, (e.parameter&&e.parameter.callback)||"");
-    return json({ ok: false, error: 'unknown mode' }, (e.parameter&&e.parameter.callback)||"");
+    if (data.mode === 'feedback') return json({ ok: true, feedback: feedback(data) }, (e.parameter && e.parameter.callback) || "");
+    if (data.mode === 'log') return json({ ok: true, logged: logQuestion(data) }, (e.parameter && e.parameter.callback) || "");
+    return json({ ok: false, error: 'unknown mode' }, (e.parameter && e.parameter.callback) || "");
   } catch (err) {
-    return json({ ok: false, error: String(err) }, (e.parameter&&e.parameter.callback)||"");
+    return json({ ok: false, error: String(err) }, (e.parameter && e.parameter.callback) || "");
   }
 }
 
@@ -120,40 +142,35 @@ function answer(p, cb) {
   var question = scrub(String(p.q || '')).slice(0, QUESTION_CHARS);
   if (!question) return json({ ok: false, error: 'empty question' }, cb);
 
-  var entries = parseEntries(p.entries).slice(0, MAX_ENTRIES);
-  if (!entries.length) {
-    return json({ ok: true, answered: false, answer: '', reason: 'no entries' }, cb);
+  var sources = parseSources(p.sources).slice(0, MAX_SOURCES);
+  if (!sources.length) {
+    // Nothing to ground on: answer honestly that we cannot verify right now.
+    return json({ ok: true, answered: false, answer: '', reason: 'no sources' }, cb);
   }
   if (!hasApiKey()) {
     return json({ ok: false, error: 'no api key', fallback: true }, cb);
   }
 
-  var history = [];
-  try {
-    history = JSON.parse(p.history || '[]');
-    if (!Array.isArray(history)) history = [];
-  } catch (e) { history = []; }
-  var histLines = history.slice(-4).map(function(x){var r=x.role||""; var c=String(x.content||"").slice(0,100); return r+": "+c;}).join("\n");
+  var history = parseHistory(p.history);
+  var histLines = history.slice(-HISTORY_TURNS).map(function (x) {
+    return (x.role || '') + ': ' + String(x.content || '').slice(0, 200);
+  }).join('\n');
 
-  var numbered = entries.map(function (en, i) {
-    return [
-      'ENTRY ' + (i + 1),
-      'Question this answers: ' + en.q,
-      'Official answer: ' + en.a,
-      'Official source: ' + en.title + ' - ' + en.url
-    ].join('\n');
-  }).join('\n\n');
+  var sourceList = sources.map(function (s, i) {
+    return (i + 1) + '. ' + s.title + ' - ' + s.url;
+  }).join('\n');
 
   var userMessage = [
-    'OFFICIAL ENTRIES (the only permitted source):',
+    'OFFICIAL NCI SOURCES (the only URLs you may link to):',
     '',
-    numbered,
+    sources.length ? sources.map(function (s, i) { return (i + 1) + '. ' + s.title + ' - ' + s.url; }).join('\n') : '(none)',
     '',
+    (histLines ? 'CONVERSATION SO FAR:\n' + histLines + '\n' : ''),
     'STUDENT QUESTION:',
     question,
     '',
-    'Answer using only the entries above. If they do not cover it, say you do ' +
-    'not know and point to the NCI Support Hub.'
+    'Answer the student. If it is about NCI or student life, help them and cite the most relevant official source(s) from the list above.',
+    'If it is unrelated to NCI or student life, politely decline. If you do not have enough information, say so and point to the NCI Support Hub.'
   ].join('\n');
 
   var res = callOpenAI([
@@ -166,18 +183,25 @@ function answer(p, cb) {
   var text = String(res.text || '').trim();
   if (!text) return json({ ok: false, error: 'empty completion', fallback: true }, cb);
 
-  // Only surface sources the model was actually given.
-  var sources = entries.map(function (en) {
-    return { title: en.title, url: en.url };
-  });
-
   return json({
     ok: true,
     answered: true,
-    answer: text.slice(0, 2500),
-    sources: sources,
+    answer: text.slice(0, 3000),
+    sources: citedSources(text, sources),
     model: MODEL
   }, cb);
+}
+
+// Return only the provided sources the model actually referenced in its answer.
+// If it cited none by URL, fall back to the first couple so the student still
+// has an official link to check.
+function citedSources(text, sources) {
+  var lower = String(text || '');
+  var used = sources.filter(function (s) {
+    return lower.indexOf(s.url) !== -1;
+  });
+  if (!used.length) used = sources.slice(0, 2);
+  return used.map(function (s) { return { title: s.title, url: s.url }; });
 }
 
 function callOpenAI(messages) {
@@ -185,7 +209,7 @@ function callOpenAI(messages) {
   var payload = {
     model: MODEL,
     messages: messages,
-    temperature: 0.1,          // slightly more natural while grounded
+    temperature: 0.2,
     max_tokens: MAX_TOKENS
   };
   try {
@@ -210,18 +234,43 @@ function callOpenAI(messages) {
   }
 }
 
-function parseEntries(raw) {
+// Conversation so far, supplied by the browser: [{ role, content }].
+function parseHistory(raw) {
   try {
     var list = JSON.parse(raw || '[]');
     if (!Array.isArray(list)) return [];
-    return list.filter(function (e) {
-      return e && e.q && e.a && String(e.url || '').indexOf('https://') === 0;
-    }).map(function (e) {
+    return list.filter(function (x) {
+      return x && (x.role === 'user' || x.role === 'assistant') && x.content;
+    }).map(function (x) {
+      return { role: x.role, content: scrub(String(x.content)).slice(0, 300) };
+    });
+  } catch (err) {
+    return [];
+  }
+}
+
+// Lighter clean for trusted labels (source titles): strip control chars and
+// emails, trim length. Does NOT apply the password/ID heuristics, which would
+// wrongly rewrite a title such as "NCI Password Management".
+function cleanLabel(text) {
+  return String(text)
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/[^\s@]+@[^\s@]+/g, ' [email] ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Official source pages supplied by the browser: [{ title, url }].
+function parseSources(raw) {
+  try {
+    var list = JSON.parse(raw || '[]');
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (s) {
+      return s && String(s.url || '').indexOf('https://') === 0;
+    }).map(function (s) {
       return {
-        q: scrub(String(e.q)).slice(0, 160),
-        a: scrub(String(e.a)).slice(0, ENTRY_CHARS),
-        url: String(e.url),
-        title: scrub(String(e.title || 'Official NCI page')).slice(0, 80)
+        title: cleanLabel(String(s.title || 'Official NCI page')).slice(0, 90),
+        url: String(s.url).slice(0, 300)
       };
     });
   } catch (err) {
@@ -342,7 +391,7 @@ function scrub(text) {
     .replace(/[^\s@]+@[^\s@]+/g, ' [email] ')
     .replace(/\b(?:password|passwd|pwd|passcode)\b\s*(?:is|are|was|=|:)?\s*["']?[^\s"']{3,}["']?/gi,
              ' password [redacted]')
-    .replace(/\b(?:x|ca)?\d{5,}\b/g, ' [id] ')
+    .replace(/\b(?:x|ca)?\d{5,}\b/gi, ' [id] ')
     .replace(/\b\d{4,}\b/g, ' [number] ')
     .replace(/\s+/g, ' ')
     .trim();

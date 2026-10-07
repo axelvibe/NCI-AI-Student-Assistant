@@ -1,108 +1,67 @@
 <!DOCTYPE html>
-<html lang="en-IE">
+<html lang="en-ie">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NCI Student Information Assistant</title>
-<meta name="description" content="Answers to common NCI postgraduate student questions, taken from the public NCI website and linking to the official page.">
+<meta name="theme-color" content="#4b1f6f">
+<title>NCI Student Assistant</title>
+<meta name="description" content="An AI student assistant for National College of Ireland. Ask anything about studying at NCI and get a grounded answer with an official source.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="site-header">
-  <div class="wrap">
-    <h1>NCI Student Information Assistant</h1>
-    <p class="tagline">How can I help you today? Quick, interactive answers for MSc students at NCI. Every answer links to the official source.</p>
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">NCI</span>
+      <div class="brand-text">
+        <h1>NCI Student Assistant</h1>
+        <p>Your guide to studying at National College of Ireland</p>
+      </div>
+    </div>
+    <span class="status-chip" id="status-chip">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="status-text">Connecting&hellip;</span>
+    </span>
   </div>
 </header>
 
-<main class="wrap">
+<main class="app-main">
+  <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Conversation">
+    <div class="msg msg-assistant">
+      <div class="avatar" aria-hidden="true">NCI</div>
+      <div class="bubble">
+        <p>Hi, I&rsquo;m the NCI Student Assistant. Ask me anything about studying at National College of Ireland &mdash; admissions, registration, fees, Moodle, assessments, exams, the library, support services and more.</p>
+        <p>I answer from official NCI sources and always link you to the page. If I don&rsquo;t have enough information, I&rsquo;ll tell you honestly and point you to the right NCI service.</p>
+      </div>
+    </div>
+  </div>
 
-  <form id="ask-form" class="ask-form" autocomplete="off">
-    <label class="sr-only" for="question">Your question</label>
-    <input
-      id="question"
-      name="question"
-      type="text"
-      placeholder="Ask anything about NCI (e.g. 'What do I need to do if I missed an assignment deadline?')"
-      aria-describedby="input-hint"
-      required>
-    <button id="ask-button" type="submit">Ask</button>
+  <form class="composer" id="chat-form" autocomplete="off">
+    <label class="sr-only" for="chat-input">Ask a question</label>
+    <textarea id="chat-input" name="question" rows="1" placeholder="Ask a question about NCI&hellip;" aria-label="Ask a question about NCI"></textarea>
+    <button type="submit" id="send-btn" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4l17.5-7.5c.8-.35.8-1.45 0-1.8L3.4 3.6c-.66-.29-1.38.2-1.38.9L2 9.1c0 .5.37.93.87.99L17 12 2.87 13.9c-.5.07-.87.5-.87 1l.02 4.6c0 .7.72 1.2 1.38.9z"/></svg>
+    </button>
   </form>
-  <p id="input-hint" class="hint">
-    This assistant uses verified NCI information. If it cannot verify an answer, it will say so and direct you to official NCI channels.
+
+  <p class="composer-note">
+    The assistant only answers questions about NCI and student life, and never asks for personal details.
+    Not an official NCI service &mdash; always confirm important information on the official page.
   </p>
-
-  <section id="journeys" class="journeys" aria-labelledby="journeys-heading">
-    <h2 id="journeys-heading">Popular student journeys</h2>
-    <div class="journey-grid">
-      <button class="journey-card" data-journey="academic">Academic &amp; Assignments</button>
-      <button class="journey-card" data-journey="timetable">Timetables &amp; Classes</button>
-      <button class="journey-card" data-journey="exams">Exams &amp; Assessments</button>
-      <button class="journey-card" data-journey="moodle">Moodle &amp; Student Systems</button>
-      <button class="journey-card" data-journey="support">Student Support</button>
-      <button class="journey-card" data-journey="fees">Fees &amp; Administration</button>
-      <button class="journey-card" data-journey="international">International Student Support</button>
-      <button class="journey-card" data-journey="wellbeing">Wellbeing &amp; Personal Support</button>
-    </div>
-  </section>
-
-  <section id="quick-questions" class="quick-questions" aria-labelledby="quick-heading">
-    <h2 id="quick-heading">Quick questions</h2>
-    <div class="quick-grid">
-      <button class="quick-btn" data-q="How do I access Moodle?">How do I access Moodle?</button>
-      <button class="quick-btn" data-q="When is reading week?">When is reading week?</button>
-      <button class="quick-btn" data-q="Who do I contact about my programme?">Who do I contact about my programme?</button>
-      <button class="quick-btn" data-q="What should I do if I miss an assessment deadline?">What should I do if I miss an assessment deadline?</button>
-      <button class="quick-btn" data-q="Where can I get academic support?">Where can I get academic support?</button>
-      <button class="quick-btn" data-q="How do I contact NCI Support Hub?">How do I contact NCI Support Hub?</button>
-    </div>
-  </section>
-
-  <section id="answer" class="answer-area" aria-live="polite" aria-atomic="true">
-    <p class="placeholder">Type a question above or choose a journey to get started.</p>
-  </section>
-
-  <section id="suggest-block" class="suggest-block" hidden>
-    <h2>Was this not the answer you needed?</h2>
-    <p id="suggest-prompt">Tell us what you were looking for and we will add it to the knowledge base.</p>
-    <a id="suggest-link" class="btn-secondary" href="https://www.ncirl.ie/Students/Student-Services" target="_blank" rel="noopener">
-      Suggest a question
-    </a>
-  </section>
-
-  <section class="popular" aria-labelledby="popular-heading">
-    <h2 id="popular-heading">Most searched questions</h2>
-    <p class="hint" id="popular-source">Loading&hellip;</p>
-    <ol id="popular-list" class="popular-list"></ol>
-  </section>
-
-  <section class="browse" aria-labelledby="browse-heading">
-    <h2 id="browse-heading">Everything it can answer</h2>
-    <p class="hint">Click any question to see the answer and the official source.</p>
-    <div id="category-filters" class="filters"></div>
-    <div id="entry-list" class="entry-list"></div>
-  </section>
-
 </main>
 
-<footer class="site-footer">
-  <div class="wrap">
+<footer class="app-footer">
+  <div class="app-footer-inner">
     <p>
-      <strong>Source of truth:</strong> every answer here is a summary of a public page on
-      <a href="https://www.ncirl.ie" target="_blank" rel="noopener">ncirl.ie</a>.
-      If this page and the official NCI page ever disagree, the official page is correct.
+      <strong>Grounded in official NCI sources.</strong> Every answer is a summary of an official
+      <a href="https://www.ncirl.ie" target="_blank" rel="noopener">ncirl.ie</a> or NCI-affiliated page, and the source is always shown.
+      If this assistant and an official page disagree, the official page is correct.
     </p>
     <p>
-      This assistant holds no personal data. It does not ask for your name, email or student number,
-      it cannot see your Moodle, and it will never invent an answer.
-      Cannot find what you need?
+      It holds no personal data and cannot see your Moodle, email or student record. Need a human?
       <a href="https://ncisupporthub.ncirl.ie/hc/en-ie" target="_blank" rel="noopener">NCI Support Hub</a> or
       <a href="https://www.ncirl.ie/Students/Student-Services" target="_blank" rel="noopener">Student Services</a>.
-    </p>
-    <p class="meta">
-      Knowledge base last reviewed <span id="last-reviewed">&hellip;</span> &middot;
-      Built for NCI postgraduate (MSc) students &middot; Not an official NCI service
     </p>
   </div>
 </footer>
