@@ -111,9 +111,7 @@ function doGet(e) {
     if (mode === 'health') return json({
       ok: true,
       keyPresent: hasApiKey(),
-      model: MODEL,
-      searches: rows('Searches'),
-      digest: rows(DIGEST_SHEET)
+      model: MODEL
     }, p.callback);
     if (mode === 'digest') return json({ ok: true, items: digest() }, p.callback);
     return answer(p, p.callback);

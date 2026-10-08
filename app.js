@@ -493,15 +493,12 @@ function autoGrowInput() {
 /* ---------------------------------------------------------------------
    10. INIT
    --------------------------------------------------------------------- */
-async function healthCheck() {
-  if (!CONFIG.aiEndpoint) { setStatus(false); return; }
-  try {
-    const url = aiEndpointUrl({ mode: 'health' });
-    const payload = await jsonp(url, 12000);
-    setStatus(!!(payload && payload.ok && payload.keyPresent));
-  } catch (e) {
-    setStatus(false);
-  }
+// The assistant is online as long as the proxy is configured. We deliberately
+// do not probe the health endpoint on every load (it can be slow to respond and
+// would flash a misleading "Offline" state). Delivery is confirmed per message
+// instead: if a message fails to send, the student sees an inline retry message.
+function healthCheck() {
+  setStatus(!!CONFIG.aiEndpoint);
 }
 
 async function init() {
