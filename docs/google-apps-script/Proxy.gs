@@ -748,7 +748,8 @@ function dailyStats(day) {
   var vs = ss().getSheetByName(VISIT_SHEET);
   if (vs && vs.getLastRow() >= 2) {
     vs.getRange(2, 1, vs.getLastRow() - 1, 4).getValues().forEach(function (r) {
-      if (String(r[1]) !== day) return;
+      // The date cell is often read back as a Date object, so normalise it.
+      if (rowDay(r[1]) !== day) return;
       stats.visits++;
       var sid = String(r[2] || '');
       if (sid) stats.sessions[sid] = true;
@@ -841,6 +842,18 @@ function writeDailyReportRow(day) {
 }
 
 /* ---------------------------------------------------------------- helpers */
+
+/** Maintenance: erase all recorded visits, questions and report rows while
+ *  keeping the header rows. Handy to clear test data before going live. */
+function resetLogs() {
+  [VISIT_SHEET, 'Searches', REPORT_SHEET].forEach(function (name) {
+    var sh = ss().getSheetByName(name);
+    if (sh && sh.getLastRow() >= 2) {
+      sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(sh.getLastColumn(), 1)).clearContent();
+    }
+  });
+  Logger.log('Cleared Visits, Searches and Daily report data rows.');
+}
 
 function json(obj, callback) {
   var cb = callback || "";
