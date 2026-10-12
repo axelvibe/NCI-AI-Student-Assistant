@@ -692,6 +692,19 @@ function setupReporting(email) {
   Logger.log('Daily report scheduled for ~08:00 each day. Recipient: ' + reportRecipient());
 }
 
+/** Easiest way to switch on the daily report: run this from the editor, type the
+ *  email in the box (or leave it blank to use your own account) and click OK. */
+function configureReporting() {
+  var current = PropertiesService.getScriptProperties().getProperty(REPORT_EMAIL_PROPERTY) || '';
+  var prompt = 'Daily report recipient email.\n\n' +
+    'Leave blank to send the report to your own Google account:\n' + Session.getEffectiveUser().getEmail() +
+    '\n\nCurrent setting: ' + (current || '(your account)');
+  var answer = Browser.inputBox('NCI Student Assistant', prompt, Browser.Buttons.OK_CANCEL);
+  if (String(answer).toLowerCase() === 'cancel') return;
+  setupReporting(String(answer || '').trim() || null);
+  Logger.log('Done. The report will be emailed to: ' + reportRecipient());
+}
+
 function setReportEmail(email) {
   PropertiesService.getScriptProperties().setProperty(REPORT_EMAIL_PROPERTY, String(email || '').trim());
   Logger.log('Report recipient set to: ' + reportRecipient());
