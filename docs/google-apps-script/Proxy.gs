@@ -825,10 +825,15 @@ function writeDailyReportRow(day) {
   var s = dailyStats(day);
   var sh = ensureSheet(ss(), REPORT_SHEET,
     ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions']);
-  var rows = sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 0), 1).getValues();
   var rowIndex = -1;
-  for (var i = 0; i < rows.length; i++) if (String(rows[i][0]) === day) rowIndex = i + 2;
-  if (rowIndex === -1) rowIndex = sh.getLastRow() + 1;
+  var last = sh.getLastRow();
+  if (last >= 2) {
+    var existing = sh.getRange(2, 1, last - 1, 1).getValues();
+    for (var i = 0; i < existing.length; i++) {
+      if (String(existing[i][0]) === day) rowIndex = i + 2;
+    }
+  }
+  if (rowIndex === -1) rowIndex = last + 1;
   sh.getRange(rowIndex, 1, 1, 8).setValues([[
     day, s.visits, s.uniqueSessions, s.questions, s.answered, s.helped, s.notHelped,
     topQuestions(s.top, 5).map(function (q) { return s.top[q] + 'x ' + q; }).join(' | ')
