@@ -240,6 +240,38 @@ body {
 .answer-sources a:hover { background: #e8dbf5; text-decoration: none; }
 .answer-sources a::after { content: "\2197"; font-size: 0.85em; opacity: 0.7; }
 
+/* "did this help?" feedback */
+.answer-feedback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.answer-feedback-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.fb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.fb-btn:hover:not(:disabled) { background: var(--brand-light); border-color: #ddcdec; transform: translateY(-1px); }
+.fb-btn:disabled { cursor: default; opacity: 0.5; }
+.fb-btn.is-chosen { opacity: 1; border-color: var(--brand); background: var(--brand-light); }
+
 /* wellbeing support card */
 .support-card {
   margin-top: 12px;

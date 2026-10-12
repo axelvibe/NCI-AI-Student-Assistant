@@ -68,6 +68,7 @@ var SYSTEM_PROMPT = [
   '- If a question is clearly unrelated to NCI or student life (for example general trivia, coding help, medical or legal advice, or another university), politely decline in one sentence and say you can only help with NCI and student questions. Do not answer off-topic questions.',
   '',
   'TRUTHFULNESS AND SOURCES',
+  '- You may be given a CURATED KNOWLEDGE BASE of pre-written, verified NCI answers. If an entry matches the question, prefer it as the baseline truth and keep its facts exactly.',
   '- You are given a list of OFFICIAL NCI SOURCES (title + URL) and, for some of them, the EXTRACTED CONTENT of that page. Treat the extracted content as ground truth.',
   '- Answer from the extracted content whenever it covers the question: quote real dates, fees, times, entry requirements and steps that appear there.',
   '- Never invent dates, fees, deadlines, policies, room numbers, staff names, phone numbers or email addresses. If a specific detail is not in the extracted content and you are not confident it is correct, say you do not have that detail and point to the most relevant official source.',
@@ -87,19 +88,25 @@ var SYSTEM_PROMPT = [
 
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName('Searches');
-  if (!sh) {
-    sh = ss.insertSheet('Searches');
-    sh.getRange(1, 1, 1, 4).setValues([['timestamp', 'query', 'entry_id', 'outcome']]);
-    sh.setFrozenRows(1);
+  ensureSheet(ss, 'Searches', ['timestamp', 'query', 'entry_id', 'outcome', 'session', 'answered']);
+  ensureSheet(ss, 'Visits', ['timestamp', 'date', 'session', 'device']);
+  ensureSheet(ss, 'Daily report', ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions']);
+  ensureSheet(ss, DIGEST_SHEET, ['question', 'why', 'last_seen']);
+  Logger.log('Sheets ready. Set the API key with setApiKey(), then run setupReporting() once ' +
+             'to turn on the daily report email.');
+}
+
+/** Create a sheet with the given header row, or fix its header if it is missing
+ *  or out of date. Data rows are never touched. */
+function ensureSheet(ss, name, header) {
+  var sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  var current = sh.getRange(1, 1, 1, header.length).getValues()[0].join('\u0000');
+  if (current !== header.join('\u0000')) {
+    sh.getRange(1, 1, 1, header.length).setValues([header]);
   }
-  var dg = ss.getSheetByName(DIGEST_SHEET);
-  if (!dg) {
-    dg = ss.insertSheet(DIGEST_SHEET);
-    dg.getRange(1, 1, 1, 3).setValues([['question', 'why', 'last_seen']]);
-    dg.setFrozenRows(1);
-  }
-  Logger.log('Ready. Set the API key with setApiKey().');
+  sh.setFrozenRows(1);
+  return sh;
 }
 
 /** Run this ONCE from the editor. The key is stored in Script Properties,
@@ -133,6 +140,10 @@ function doGet(e) {
       model: MODEL
     }, p.callback);
     if (mode === 'digest') return json({ ok: true, items: digest() }, p.callback);
+    if (mode === 'visit') return json({ ok: true, recorded: recordVisit(p) }, p.callback);
+    if (mode === 'log') return json({ ok: true, logged: logQuestion(p) }, p.callback);
+    if (mode === 'feedback') return json({ ok: true, feedback: recordFeedback(p) }, p.callback);
+    if (mode === 'report') return json({ ok: true, report: dailyReportText(p.date || yesterday()) }, p.callback);
     return answer(p, p.callback);
   } catch (err) {
     return json({ ok: false, error: String(err) }, (e.parameter && e.parameter.callback) || "");
@@ -145,8 +156,9 @@ function doPost(e) {
   try {
     var raw = (e && e.postData && e.postData.contents) || '';
     var data = JSON.parse(raw || '{}');
-    if (data.mode === 'feedback') return json({ ok: true, feedback: feedback(data) }, (e.parameter && e.parameter.callback) || "");
+    if (data.mode === 'feedback') return json({ ok: true, feedback: recordFeedback(data) }, (e.parameter && e.parameter.callback) || "");
     if (data.mode === 'log') return json({ ok: true, logged: logQuestion(data) }, (e.parameter && e.parameter.callback) || "");
+    if (data.mode === 'visit') return json({ ok: true, recorded: recordVisit(data) }, (e.parameter && e.parameter.callback) || "");
     return json({ ok: false, error: 'unknown mode' }, (e.parameter && e.parameter.callback) || "");
   } catch (err) {
     return json({ ok: false, error: String(err) }, (e.parameter && e.parameter.callback) || "");
@@ -177,6 +189,12 @@ function answer(p, cb) {
     return (i + 1) + '. ' + s.title + ' - ' + s.url;
   }).join('\n');
 
+  // Curated, pre-verified answers from knowledge.json - the primary grounding.
+  var kb = parseKb(p.kb);
+  var kbBlock = kb.map(function (e) {
+    return 'Q: ' + e.question + '\nA: ' + e.answer;
+  }).join('\n\n');
+
   // Pull the actual text of the best-ranked pages so the answer can quote real
   // details (dates, fees, steps) instead of only linking to the page.
   var context = fetchContext(sources);
@@ -200,12 +218,13 @@ function answer(p, cb) {
     '',
     sourceList || '(none)',
     '',
+    kbBlock ? 'CURATED KNOWLEDGE BASE (verified NCI answers - prefer these, they are the baseline truth):\n\n' + kbBlock + '\n\n' : '',
     contentBlock ? 'EXTRACTED PAGE CONTENT (copy facts from this):\n\n' + contentBlock + '\n\n' : '',
     (histLines ? 'CONVERSATION SO FAR:\n' + histLines + '\n' : ''),
     'STUDENT QUESTION:',
     question,
     '',
-    'Answer the student. If it is about NCI or student life, help them and cite the most relevant official source(s) from the list above.',
+    'Answer the student. If a Curated Knowledge Base answer above fits the question, base your reply on it (reworded naturally for the chat) and cite its official source.',
     'If it is unrelated to NCI or student life, politely decline. If you do not have enough information, say so and point to the NCI Support Hub.'
   ].join('\n');
 
@@ -480,6 +499,26 @@ function parseHistory(raw) {
   }
 }
 
+// Curated knowledge-base entries from knowledge.json, supplied by the browser:
+// [{ question, answer }]. These are already written and verified, so they are
+// NOT passed through scrub (which would corrupt real dates and emails).
+function parseKb(raw) {
+  try {
+    var list = JSON.parse(raw || '[]');
+    if (!Array.isArray(list)) return [];
+    return list.slice(0, 4).filter(function (e) {
+      return e && e.answer;
+    }).map(function (e) {
+      return {
+        question: cleanLabel(String(e.question || '')).slice(0, 160),
+        answer: String(e.answer || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 900)
+      };
+    });
+  } catch (err) {
+    return [];
+  }
+}
+
 // Lighter clean for trusted labels (source titles): strip control chars and
 // emails, trim length. Does NOT apply the password/ID heuristics, which would
 // wrongly rewrite a title such as "NCI Password Management".
@@ -513,22 +552,71 @@ function parseSources(raw) {
 
 /* ---------------------------------------------------------------- logging */
 
-function logQuestion(data) {
-  var q = scrub(String(data.question || '')).slice(0, 200);
-  if (!q) return false;
-  appendRow('Searches', [new Date().toISOString(), q,
-                        String(data.entryId || '').slice(0, 80),
-                        data.answered ? 'ai' : 'no-answer']);
+var VISIT_SHEET = 'Visits';
+
+// One row per page load. Anonymous by design: a random session id, a coarse
+// device type and the timestamp. No IP address, name or email is ever stored.
+function recordVisit(data) {
+  var now = new Date();
+  appendRow(VISIT_SHEET, [now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device)]);
   return true;
 }
 
-function feedback(data) {
-  var q = scrub(String(data.question || '')).slice(0, 200);
-  var good = data.helpful === true || data.helpful === 'true';
-  appendRow('Searches', [new Date().toISOString(), q,
-                        String(data.entryId || '').slice(0, 80),
-                        good ? 'helped' : 'not-helpful']);
+// One row per question - what was asked, whether the assistant answered it, and
+// a question id + session id used to attach "did this help" feedback later.
+function logQuestion(data) {
+  var q = scrub(String(data.question || data.q || '')).slice(0, 200);
+  if (!q) return false;
+  var answered = data.answered === true || data.answered === 'true';
+  appendRow('Searches', [
+    new Date().toISOString(), q, cleanId(data.qid),
+    answered ? 'ai' : 'no-answer', cleanId(data.sid), answered ? 'yes' : 'no'
+  ]);
   return true;
+}
+
+// "That helped / that didn't help". Updates the matching question row in place
+// when the id is found, otherwise records a standalone feedback row.
+function recordFeedback(data) {
+  var qid = cleanId(data.qid);
+  var good = data.helpful === true || data.helpful === 'true';
+  var outcome = good ? 'helped' : 'not-helpful';
+  if (qid) {
+    var sh = ss().getSheetByName('Searches');
+    if (sh && sh.getLastRow() >= 2) {
+      var ids = sh.getRange(2, 3, sh.getLastRow() - 1, 1).getValues();
+      for (var i = ids.length - 1; i >= 0; i--) {
+        if (String(ids[i][0]) === qid) {
+          sh.getRange(i + 2, 4).setValue(outcome);
+          return true;
+        }
+      }
+    }
+  }
+  appendRow('Searches', [
+    new Date().toISOString(), scrub(String(data.question || data.q || '')).slice(0, 200),
+    qid, outcome, cleanId(data.sid), ''
+  ]);
+  return true;
+}
+
+function cleanId(v) {
+  return String(v == null ? '' : v).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+}
+
+function deviceType(v) {
+  var d = String(v || '').toLowerCase();
+  return (d === 'mobile' || d === 'tablet' || d === 'desktop') ? d : 'unknown';
+}
+
+function isoDate(d) {
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+}
+
+function yesterday() {
+  var d = new Date();
+  d.setDate(d.getDate() - 1);
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
 }
 
 /* ----------------------------------------------------------------- digest */
@@ -585,6 +673,153 @@ function refreshDigestTab() {
     if (r.unhappy) why.push(r.unhappy + 'x marked unhelpful');
     return [r.question, why.join(', '), new Date().toISOString().slice(0, 10)];
   }));
+}
+
+/* ----------------------------------------------------------- daily report */
+
+var REPORT_SHEET = 'Daily report';
+var REPORT_EMAIL_PROPERTY = 'REPORT_EMAIL';
+
+/** Run ONCE from the editor to switch on the daily report email.
+ *  setupReporting()            -> email the deploying account, 08:00 daily
+ *  setupReporting('x@y.com')   -> email someone else instead           */
+function setupReporting(email) {
+  if (email) PropertiesService.getScriptProperties().setProperty(REPORT_EMAIL_PROPERTY, String(email).trim());
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'sendDailyReport') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendDailyReport').timeBased().everyDays(1).atHour(8).create();
+  Logger.log('Daily report scheduled for ~08:00 each day. Recipient: ' + reportRecipient());
+}
+
+function setReportEmail(email) {
+  PropertiesService.getScriptProperties().setProperty(REPORT_EMAIL_PROPERTY, String(email || '').trim());
+  Logger.log('Report recipient set to: ' + reportRecipient());
+}
+
+function reportRecipient() {
+  return PropertiesService.getScriptProperties().getProperty(REPORT_EMAIL_PROPERTY)
+      || Session.getEffectiveUser().getEmail();
+}
+
+/** Trigger entry point (also runnable by hand). Emails + stores yesterday's report. */
+function sendDailyReport() {
+  var day = yesterday();
+  var text = dailyReportText(day);
+  writeDailyReportRow(day);
+  var to = reportRecipient();
+  if (to) {
+    MailApp.sendEmail({
+      to: to,
+      subject: 'NCI Student Assistant - daily report ' + day,
+      body: text
+    });
+  }
+  return text;
+}
+
+/** Manual test: builds today's report and returns it (no email). */
+function previewDailyReport() {
+  return dailyReportText(isoDate(new Date()));
+}
+
+function dailyStats(day) {
+  var zero = function (o) { return Object.keys(o).length; };
+  var stats = {
+    date: day,
+    visits: 0, sessions: {}, questions: 0, answered: 0,
+    helped: 0, notHelped: 0, noFeedback: 0, refused: 0,
+    top: {}, unanswered: {}
+  };
+
+  var vs = ss().getSheetByName(VISIT_SHEET);
+  if (vs && vs.getLastRow() >= 2) {
+    vs.getRange(2, 1, vs.getLastRow() - 1, 4).getValues().forEach(function (r) {
+      if (String(r[1]) !== day) return;
+      stats.visits++;
+      var sid = String(r[2] || '');
+      if (sid) stats.sessions[sid] = true;
+    });
+  }
+
+  var sh = ss().getSheetByName('Searches');
+  if (sh && sh.getLastRow() >= 2) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues().forEach(function (r) {
+      if (rowDay(r[0]) !== day) return;
+      var q = String(r[1] || '').trim();
+      var outcome = String(r[3] || '').trim();
+      var answeredFlag = String(r[5] || '').trim();
+      if (!q) return;
+      stats.questions++;
+      stats.top[q] = (stats.top[q] || 0) + 1;
+      if (answeredFlag === 'yes') stats.answered++;
+      else stats.refused++;
+      if (outcome === 'helped') stats.helped++;
+      else if (outcome === 'not-helpful') stats.notHelped++;
+      else if (answeredFlag === 'yes') stats.noFeedback++;
+      if (answeredFlag !== 'yes') stats.unanswered[q] = (stats.unanswered[q] || 0) + 1;
+    });
+  }
+
+  stats.uniqueSessions = zero(stats.sessions);
+  return stats;
+}
+
+function rowDay(ts) {
+  if (ts instanceof Date) return Utilities.formatDate(ts, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  return String(ts || '').slice(0, 10);
+}
+
+function topQuestions(top, limit) {
+  return Object.keys(top).sort(function (a, b) { return top[b] - top[a]; }).slice(0, limit || 5);
+}
+
+function dailyReportText(day) {
+  var s = dailyStats(day);
+  var rate = s.questions ? Math.round((s.answered / s.questions) * 100) : 0;
+  var lines = [
+    'NCI Student Assistant - daily report',
+    'Date: ' + s.date,
+    '',
+    'Visits:            ' + s.visits,
+    'Unique sessions:   ' + s.uniqueSessions,
+    '',
+    'Questions asked:   ' + s.questions,
+    'Answered:          ' + s.answered + (s.questions ? ' (' + rate + '%)' : ''),
+    '  helped:          ' + s.helped,
+    '  not helpful:     ' + s.notHelped,
+    '  no feedback yet: ' + s.noFeedback,
+    'No answer given:   ' + s.refused
+  ];
+
+  var top = topQuestions(s.top, 5);
+  if (top.length) {
+    lines.push('', 'Top questions:');
+    top.forEach(function (q) { lines.push('  ' + s.top[q] + 'x  ' + q); });
+  }
+
+  var gaps = topQuestions(s.unanswered, 10);
+  if (gaps.length) {
+    lines.push('', 'Questions the assistant could NOT answer (write content for these):');
+    gaps.forEach(function (q) { lines.push('  - ' + q + ' (' + s.unanswered[q] + 'x)'); });
+  } else {
+    lines.push('', 'Every question in this period was answered.');
+  }
+  return lines.join('\n');
+}
+
+function writeDailyReportRow(day) {
+  var s = dailyStats(day);
+  var sh = ensureSheet(ss(), REPORT_SHEET,
+    ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions']);
+  var rows = sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 0), 1).getValues();
+  var rowIndex = -1;
+  for (var i = 0; i < rows.length; i++) if (String(rows[i][0]) === day) rowIndex = i + 2;
+  if (rowIndex === -1) rowIndex = sh.getLastRow() + 1;
+  sh.getRange(rowIndex, 1, 1, 8).setValues([[
+    day, s.visits, s.uniqueSessions, s.questions, s.answered, s.helped, s.notHelped,
+    topQuestions(s.top, 5).map(function (q) { return s.top[q] + 'x ' + q; }).join(' | ')
+  ]]);
 }
 
 /* ---------------------------------------------------------------- helpers */

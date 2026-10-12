@@ -30,11 +30,17 @@ const CONFIG = {
   // Curated registry of official NCI source pages.
   sourcesUrl: 'sources.json',
 
+  // Curated, pre-verified answers used as the primary grounding layer.
+  knowledgeUrl: 'knowledge.json',
+
   // Apps Script proxy (holds the OpenAI key). Empty "" = AI off.
   aiEndpoint: 'https://script.google.com/macros/s/AKfycbxS_LS_U-BrKKEHt5HKC_9y3bQGgqtY3MWcmJGhDccxEUwOdmycP2HKuWGaJLJHUx6Fsg/exec',
 
   // How many registry sources to send the model for each question.
   maxSources: 8,
+
+  // How many knowledge-base entries to send as grounding.
+  maxKb: 4,
 
   // How many previous turns to send for context.
   historyTurns: 8,
@@ -51,9 +57,37 @@ let aiSeq = 0;
    --------------------------------------------------------------------- */
 const state = {
   sources: [],       // registry
+  knowledge: [],     // curated knowledge base (knowledge.json)
   allowedHosts: new Set(), // hosts we are allowed to link to
   ready: false
 };
+
+// Anonymous session id, kept for the browser tab only. Used to group a visit's
+// events; never linked to any personal detail.
+const SESSION_ID = (() => {
+  try {
+    const key = 'nciAssistantSession';
+    let id = sessionStorage.getItem(key);
+    if (!id) {
+      id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      sessionStorage.setItem(key, id);
+    }
+    return id.slice(0, 40);
+  } catch (e) {
+    return 's' + Date.now().toString(36);
+  }
+})();
+
+function deviceType() {
+  const ua = (navigator.userAgent || '').toLowerCase();
+  if (/ipad|tablet|kindle|playbook|silk/.test(ua)) return 'tablet';
+  if (/mobi|android|iphone|ipod|phone/.test(ua)) return 'mobile';
+  return 'desktop';
+}
+
+function newId(prefix) {
+  return (prefix || 'q') + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
 
 function isOfficialUrl(url) {
   try {
@@ -178,6 +212,48 @@ function selectSources(question) {
   return picked;
 }
 
+// Load the curated knowledge base (knowledge.json): pre-written, verified
+// answers. This is the baseline grounding layer for the assistant.
+async function loadKnowledge() {
+  const res = await fetch(CONFIG.knowledgeUrl + '?v=' + Date.now(), { cache: 'no-store' });
+  if (!res.ok) throw new Error('Could not load knowledge.json (HTTP ' + res.status + ')');
+  const data = await res.json();
+  const entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+  state.knowledge = entries
+    .filter(e => e && e.answer)
+    .map(e => {
+      const kw = new Set();
+      (e.keywords || []).forEach(k => tokenise(k).forEach(t => kw.add(t)));
+      (e.variants || []).forEach(v => tokenise(v).forEach(t => kw.add(t)));
+      tokenise(e.question || '').forEach(t => kw.add(t));
+      if (e.link) { try { state.allowedHosts.add(new URL(e.link).hostname.toLowerCase()); } catch (err) {} }
+      return {
+        id: e.id || '',
+        question: e.question || '',
+        answer: e.answer,
+        link: e.link || '',
+        linkLabel: e.linkLabel || e.title || '',
+        title: e.title || e.linkLabel || '',
+        kw: kw
+      };
+    });
+}
+
+// Choose the curated entries that best match the question.
+function selectKb(question) {
+  const qNorm = normalise(question);
+  const qSet = new Set(tokenise(question));
+  const scored = state.knowledge.map(e => {
+    let score = 0;
+    for (const t of qSet) if (e.kw.has(t)) score += 2;
+    const qn = normalise(e.question);
+    if (qn && qNorm.indexOf(qn) !== -1) score += 4;
+    return { e, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.filter(x => x.score >= 3).slice(0, CONFIG.maxKb).map(x => x.e);
+}
+
 /* ---------------------------------------------------------------------
    5. PROXY CALL
    --------------------------------------------------------------------- */
@@ -212,11 +288,12 @@ function jsonp(url, timeoutMs) {
   });
 }
 
-async function askAI(question, sources) {
+async function askAI(question, sources, kb) {
   const history = Array.isArray(CONVERSATION.history) ? CONVERSATION.history.slice(-CONFIG.historyTurns) : [];
   const url = aiEndpointUrl({
     q: scrub(question).slice(0, 400),
     sources: JSON.stringify(sources.map(s => ({ title: s.title, url: s.url }))),
+    kb: JSON.stringify((kb || []).map(e => ({ question: e.question, answer: e.answer }))),
     history: JSON.stringify(history)
   });
   if (!url) return null;
@@ -235,6 +312,29 @@ async function askAI(question, sources) {
     .map(s => ({ title: s.title || 'Official NCI page', url: s.url }));
 
   return { answer: payload.answer.trim(), sources: used, model: payload.model };
+}
+
+/* ---------------------------------------------------------------------
+   5b. ANONYMOUS RECORDING
+   --------------------------------------------------------------------- */
+// Fire-and-forget beacons to the proxy. They never block the chat and never
+// carry personal data - just an anonymous session id and a device type.
+function beacon(params) {
+  const url = aiEndpointUrl(params);
+  if (!url) return;
+  jsonp(url, 8000).catch(() => {});
+}
+
+function recordVisit() {
+  beacon({ mode: 'visit', sid: SESSION_ID, device: deviceType() });
+}
+
+function logQuestion(question, answered, qid) {
+  beacon({ mode: 'log', q: scrub(question).slice(0, 200), answered: answered ? 'true' : 'false', qid: qid, sid: SESSION_ID });
+}
+
+function sendFeedback(qid, question, helpful) {
+  beacon({ mode: 'feedback', qid: qid, helpful: helpful ? 'true' : 'false', q: scrub(question).slice(0, 200), sid: SESSION_ID });
 }
 
 /* ---------------------------------------------------------------------
@@ -405,6 +505,39 @@ function appendSupportCard(bubble) {
   bubble.appendChild(card);
 }
 
+// "Was this helpful?" thumbs under an answer. Records the rating anonymously
+// against the question id so the daily report can show whether answers helped.
+function appendFeedback(bubble, qid, question) {
+  const wrap = document.createElement('div');
+  wrap.className = 'answer-feedback';
+  const label = document.createElement('span');
+  label.className = 'answer-feedback-label';
+  label.textContent = 'Did this help?';
+  wrap.appendChild(label);
+
+  let done = false;
+  const make = (cls, symbol, text, helpful) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fb-btn ' + cls;
+    btn.setAttribute('aria-label', text);
+    btn.title = text;
+    btn.textContent = symbol;
+    btn.addEventListener('click', () => {
+      if (done) return;
+      done = true;
+      sendFeedback(qid, question, helpful);
+      wrap.querySelectorAll('.fb-btn').forEach(b => { b.disabled = true; });
+      btn.classList.add('is-chosen');
+      label.textContent = 'Thanks for the feedback';
+    });
+    return btn;
+  };
+  wrap.appendChild(make('fb-up', '\u{1F44D}', 'This helped', true));
+  wrap.appendChild(make('fb-down', '\u{1F44E}', 'This was not helpful', false));
+  bubble.appendChild(wrap);
+}
+
 function showTyping() {
   const msg = document.createElement('div');
   msg.className = 'msg msg-assistant typing';
@@ -449,23 +582,33 @@ async function sendMessage(rawText) {
 
   const typing = showTyping();
   const sources = selectSources(text);
-  const ai = await askAI(text, sources);
+  const kb = selectKb(text);
+  const ai = await askAI(text, sources, kb);
   if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+
+  const qid = newId('q');
 
   if (ai === null) {
     appendAssistantText(
       'Sorry, I could not reach the NCI assistant just now. Please check your connection and try again, or contact the NCI Support Hub: ' + CONFIG.supportHubUrl,
       []
     );
+    logQuestion(text, false, qid);
   } else if (ai.refused) {
     const bubble = appendAssistantBubble();
     renderRichText(bubble,
       'I don\'t have enough verified information to answer that one confidently, so I won\'t guess.\n\n' +
       'You can find the answer on the NCI Support Hub, or ask Student Services directly.');
     appendSources(bubble, state.sources.filter(s => s.id === 'support-hub' || s.id === 'student-services'));
+    logQuestion(text, false, qid);
   } else {
-    appendAssistantText(ai.answer, ai.sources);
-    if (isDistressed(text)) appendSupportCard(els.chat.lastChild.querySelector('.bubble'));
+    const bubble = appendAssistantBubble();
+    renderRichText(bubble, ai.answer);
+    appendSources(bubble, ai.sources);
+    if (isDistressed(text)) appendSupportCard(bubble);
+    appendFeedback(bubble, qid, text);
+    scrollToBottom();
+    logQuestion(text, true, qid);
 
     // Record the turn for conversational context (scrubbed, trimmed).
     CONVERSATION.history.push({ role: 'user', content: scrub(text).slice(0, 300) });
@@ -521,6 +664,9 @@ async function init() {
 
   try {
     await loadSources();
+    // The knowledge base is the primary grounding; if it fails to load we still
+    // answer from the live official sources, so this is not fatal.
+    try { await loadKnowledge(); } catch (e) { /* continue with sources only */ }
     state.ready = true;
   } catch (e) {
     appendAssistantText(
@@ -533,6 +679,9 @@ async function init() {
   }
 
   healthCheck();
+
+  // Record this visit anonymously (one row per page load).
+  recordVisit();
 }
 
 document.addEventListener('DOMContentLoaded', init);
