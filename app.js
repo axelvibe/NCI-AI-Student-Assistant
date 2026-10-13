@@ -319,10 +319,13 @@ async function askAI(question, sources, kb) {
    --------------------------------------------------------------------- */
 // Fire-and-forget beacons to the proxy. They never block the chat and never
 // carry personal data - just an anonymous session id and a device type.
+// A unique _t parameter is appended so Google never serves a cached response
+// for a repeated URL (which would skip re-running the logger).
 function beacon(params) {
   const url = aiEndpointUrl(params);
   if (!url) return;
-  jsonp(url, 8000).catch(() => {});
+  const bust = url + (url.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now() + Math.random().toString(36).slice(2, 7);
+  jsonp(bust, 8000).catch(() => {});
 }
 
 function recordVisit() {
