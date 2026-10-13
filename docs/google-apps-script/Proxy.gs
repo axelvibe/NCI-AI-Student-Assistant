@@ -558,8 +558,7 @@ var VISIT_SHEET = 'Visits';
 // device type and the timestamp. No IP address, name or email is ever stored.
 function recordVisit(data) {
   var now = new Date();
-  appendRow(VISIT_SHEET, [now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device)]);
-  return true;
+  return appendRow(VISIT_SHEET, [now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device)]);
 }
 
 // One row per question - what was asked, whether the assistant answered it, and
@@ -568,11 +567,10 @@ function logQuestion(data) {
   var q = scrub(String(data.question || data.q || '')).slice(0, 200);
   if (!q) return false;
   var answered = data.answered === true || data.answered === 'true';
-  appendRow('Searches', [
+  return appendRow('Searches', [
     new Date().toISOString(), q, cleanId(data.qid),
     answered ? 'ai' : 'no-answer', cleanId(data.sid), answered ? 'yes' : 'no'
   ]);
-  return true;
 }
 
 // "That helped / that didn't help". Updates the matching question row in place
@@ -874,11 +872,24 @@ function rows(name) {
   return sh ? sh.getLastRow() : 0;
 }
 
+var LOG_SHEETS = {
+  'Searches': ['timestamp', 'query', 'entry_id', 'outcome', 'session', 'answered'],
+  'Visits': ['timestamp', 'date', 'session', 'device'],
+  'Daily report': ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions'],
+  'Needs content': ['question', 'why', 'last_seen']
+};
+
 function appendRow(name, values) {
   try {
-    ss().getSheetByName(name).appendRow(values);
+    var sheet = ss().getSheetByName(name);
+    if (!sheet) {
+      var header = LOG_SHEETS[name];
+      sheet = header ? ensureSheet(ss(), name, header) : ss().insertSheet(name);
+    }
+    sheet.appendRow(values);
     return true;
   } catch (err) {
+    Logger.log('appendRow(' + name + ') failed: ' + err);
     return false;
   }
 }
