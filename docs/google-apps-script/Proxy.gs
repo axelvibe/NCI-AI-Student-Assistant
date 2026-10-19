@@ -55,6 +55,24 @@ var BROWSER_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/53
 // Digest tab for "what should we write next".
 var DIGEST_SHEET = 'Needs content';
 
+// Reporting tabs (kept separate so each one stays easy to read and pivot).
+var SURVEY_SHEET = 'Survey responses';
+var SURVEY_SUMMARY_SHEET = 'Survey summary';
+var TOP_SHEET = 'Top questions';
+var DASHBOARD_SHEET = 'Dashboard';
+var REPORT_SHEET = 'Daily report';
+
+// One survey question per row in "Survey summary". The ids must match app.js.
+var SURVEY_QUESTIONS = [
+  { id: 'resolved',  label: 'Was your problem resolved?' },
+  { id: 'helpful',   label: 'Did you find it helpful?' },
+  { id: 'recommend', label: 'Would you recommend it?' },
+  { id: 'easy',      label: 'Was it easy to use?' }
+];
+
+var REPORT_HEADERS = ['date', 'visits', 'unique_sessions', 'questions', 'answered',
+  'answered_%', 'helped', 'helped_%', 'not_helped', 'no_feedback', 'no_answer', 'surveys'];
+
 var OPENAI_KEY_PROPERTY = 'OPENAI_API_KEY';
 
 var SUPPORT_HUB = 'https://ncisupporthub.ncirl.ie/hc/en-ie';
@@ -88,11 +106,25 @@ var SYSTEM_PROMPT = [
 
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  ensureSheet(ss, 'Searches', ['timestamp', 'query', 'entry_id', 'outcome', 'session', 'answered']);
-  ensureSheet(ss, 'Visits', ['timestamp', 'date', 'session', 'device']);
-  ensureSheet(ss, 'Daily report', ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions']);
-  ensureSheet(ss, DIGEST_SHEET, ['question', 'why', 'last_seen']);
-  Logger.log('Sheets ready. Set the API key with setApiKey(), then run setupReporting() once ' +
+
+  // If the Daily report still has its old, narrower header, clear its data rows
+  // so the re-organised layout starts clean. (It is rebuilt from the raw logs.)
+  var rep = ss.getSheetByName(REPORT_SHEET);
+  if (rep) {
+    var head = rep.getRange(1, 1, 1, Math.max(rep.getLastColumn(), 1)).getValues()[0].join('|');
+    if (head !== REPORT_HEADERS.join('|')) {
+      if (rep.getLastRow() >= 2) {
+        rep.getRange(2, 1, rep.getLastRow() - 1, Math.max(rep.getLastColumn(), 1)).clearContent();
+      }
+    }
+  }
+
+  Object.keys(LOG_SHEETS).forEach(function (name) {
+    ensureSheet(ss, name, LOG_SHEETS[name]);
+  });
+
+  Logger.log('Sheets ready: ' + Object.keys(LOG_SHEETS).join(', ') + '. ' +
+             'Set the API key with setApiKey(), then run setupReporting() once ' +
              'to turn on the daily report email.');
 }
 
@@ -143,6 +175,7 @@ function doGet(e) {
     if (mode === 'visit') return json({ ok: true, recorded: recordVisit(p) }, p.callback);
     if (mode === 'log') return json({ ok: true, logged: logQuestion(p) }, p.callback);
     if (mode === 'feedback') return json({ ok: true, feedback: recordFeedback(p) }, p.callback);
+    if (mode === 'survey') return json({ ok: true, survey: recordSurvey(p) }, p.callback);
     if (mode === 'report') return json({ ok: true, report: dailyReportText(p.date || yesterday()) }, p.callback);
     return answer(p, p.callback);
   } catch (err) {
@@ -157,6 +190,7 @@ function doPost(e) {
     var raw = (e && e.postData && e.postData.contents) || '';
     var data = JSON.parse(raw || '{}');
     if (data.mode === 'feedback') return json({ ok: true, feedback: recordFeedback(data) }, (e.parameter && e.parameter.callback) || "");
+    if (data.mode === 'survey') return json({ ok: true, survey: recordSurvey(data) }, (e.parameter && e.parameter.callback) || "");
     if (data.mode === 'log') return json({ ok: true, logged: logQuestion(data) }, (e.parameter && e.parameter.callback) || "");
     if (data.mode === 'visit') return json({ ok: true, recorded: recordVisit(data) }, (e.parameter && e.parameter.callback) || "");
     return json({ ok: false, error: 'unknown mode' }, (e.parameter && e.parameter.callback) || "");
@@ -598,6 +632,32 @@ function recordFeedback(data) {
   return true;
 }
 
+// One row per completed survey. Values arrive as 'yes'/'no' (or '' if skipped).
+function recordSurvey(data) {
+  var now = new Date();
+  var norm = function (v) {
+    var s = String(v == null ? '' : v).toLowerCase();
+    return (s === 'yes' || s === 'no') ? s : '';
+  };
+  var answers = {};
+  var answered = 0;
+  var yesCount = 0;
+  SURVEY_QUESTIONS.forEach(function (q) {
+    var a = norm(data[q.id]);
+    answers[q.id] = a;
+    if (a) {
+      answered++;
+      if (a === 'yes') yesCount++;
+    }
+  });
+  var overall = answered ? Math.round((yesCount / answered) * 100) / 100 : '';
+  return appendRow(SURVEY_SHEET, [
+    now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device),
+    cleanId(data.qid), scrub(String(data.q || data.question || '')).slice(0, 200),
+    answers.resolved, answers.helpful, answers.recommend, answers.easy, overall
+  ]);
+}
+
 function cleanId(v) {
   return String(v == null ? '' : v).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
 }
@@ -675,7 +735,6 @@ function refreshDigestTab() {
 
 /* ----------------------------------------------------------- daily report */
 
-var REPORT_SHEET = 'Daily report';
 var REPORT_EMAIL_PROPERTY = 'REPORT_EMAIL';
 
 /** Run ONCE from the editor to switch on the daily report email.
@@ -718,6 +777,9 @@ function sendDailyReport() {
   var day = yesterday();
   var text = dailyReportText(day);
   writeDailyReportRow(day);
+  writeSurveySummaryRows(day);
+  writeTopQuestionsRows(day);
+  writeDashboard();
   var to = reportRecipient();
   if (to) {
     MailApp.sendEmail({
@@ -727,6 +789,17 @@ function sendDailyReport() {
     });
   }
   return text;
+}
+
+/** Rebuild every reporting tab for TODAY. Handy while testing. */
+function refreshReports() {
+  var day = isoDate(new Date());
+  writeDailyReportRow(day);
+  writeSurveySummaryRows(day);
+  writeTopQuestionsRows(day);
+  writeDashboard();
+  Logger.log('Reporting tabs refreshed for ' + day + '.');
+  return day;
 }
 
 /** Manual test: builds today's report and returns it (no email). */
@@ -739,7 +812,7 @@ function dailyStats(day) {
   var stats = {
     date: day,
     visits: 0, sessions: {}, questions: 0, answered: 0,
-    helped: 0, notHelped: 0, noFeedback: 0, refused: 0,
+    helped: 0, notHelped: 0, noFeedback: 0, refused: 0, surveys: 0,
     top: {}, unanswered: {}
   };
 
@@ -774,6 +847,14 @@ function dailyStats(day) {
   }
 
   stats.uniqueSessions = zero(stats.sessions);
+
+  var sv = ss().getSheetByName(SURVEY_SHEET);
+  if (sv && sv.getLastRow() >= 2) {
+    sv.getRange(2, 1, sv.getLastRow() - 1, 11).getValues().forEach(function (r) {
+      if (rowDay(r[1]) === day) stats.surveys++;
+    });
+  }
+
   return stats;
 }
 
@@ -817,40 +898,184 @@ function dailyReportText(day) {
   } else {
     lines.push('', 'Every question in this period was answered.');
   }
+
+  var sv = surveyStats(day);
+  lines.push('', 'Survey responses:  ' + sv.n);
+  if (sv.n) {
+    SURVEY_QUESTIONS.forEach(function (q) {
+      var c = sv.q[q.id];
+      var total = c.yes + c.no;
+      var pct = total ? Math.round((c.yes / total) * 100) : 0;
+      lines.push('  ' + padRight(q.label, 30) + c.yes + ' yes / ' + c.no + ' no  (' + pct + '%)');
+    });
+  }
   return lines.join('\n');
+}
+
+function padRight(s, n) {
+  s = String(s);
+  while (s.length < n) s += ' ';
+  return s;
 }
 
 function writeDailyReportRow(day) {
   var s = dailyStats(day);
-  var sh = ensureSheet(ss(), REPORT_SHEET,
-    ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions']);
+  var rate = s.questions ? Math.round((s.answered / s.questions) * 100) : 0;
+  var helpedPct = s.questions ? Math.round((s.helped / s.questions) * 100) : 0;
+  var sh = ensureSheet(ss(), REPORT_SHEET, REPORT_HEADERS);
   var rowIndex = -1;
   var last = sh.getLastRow();
   if (last >= 2) {
     var existing = sh.getRange(2, 1, last - 1, 1).getValues();
     for (var i = 0; i < existing.length; i++) {
-      if (String(existing[i][0]) === day) rowIndex = i + 2;
+      if (rowDay(existing[i][0]) === day) rowIndex = i + 2;
     }
   }
   if (rowIndex === -1) rowIndex = last + 1;
-  sh.getRange(rowIndex, 1, 1, 8).setValues([[
-    day, s.visits, s.uniqueSessions, s.questions, s.answered, s.helped, s.notHelped,
-    topQuestions(s.top, 5).map(function (q) { return s.top[q] + 'x ' + q; }).join(' | ')
+  sh.getRange(rowIndex, 1, 1, REPORT_HEADERS.length).setValues([[
+    day, s.visits, s.uniqueSessions, s.questions, s.answered, rate,
+    s.helped, helpedPct, s.notHelped, s.noFeedback, s.refused, s.surveys
   ]]);
+}
+
+/** Per-question yes/no/skip counts for one day. */
+function surveyStats(day) {
+  var out = { n: 0, q: {} };
+  SURVEY_QUESTIONS.forEach(function (q) { out.q[q.id] = { yes: 0, no: 0, skipped: 0 }; });
+  var sh = ss().getSheetByName(SURVEY_SHEET);
+  if (!sh || sh.getLastRow() < 2) return out;
+  sh.getRange(2, 1, sh.getLastRow() - 1, 11).getValues().forEach(function (r) {
+    if (rowDay(r[1]) !== day) return;
+    out.n++;
+    SURVEY_QUESTIONS.forEach(function (q, i) {
+      var v = String(r[6 + i] || '').toLowerCase();
+      if (v === 'yes') out.q[q.id].yes++;
+      else if (v === 'no') out.q[q.id].no++;
+      else out.q[q.id].skipped++;
+    });
+  });
+  return out;
+}
+
+/** Delete existing rows for a date in a one-row-per-day reporting tab. */
+function clearDayRows(sh, day) {
+  var last = sh.getLastRow();
+  if (last < 2) return;
+  var dates = sh.getRange(2, 1, last - 1, 1).getValues();
+  for (var i = dates.length - 1; i >= 0; i--) {
+    if (rowDay(dates[i][0]) === day) sh.deleteRow(i + 2);
+  }
+}
+
+/** Rebuild "Survey summary" for one day: one row per survey question. */
+function writeSurveySummaryRows(day) {
+  var s = surveyStats(day);
+  var sh = ensureSheet(ss(), SURVEY_SUMMARY_SHEET, LOG_SHEETS[SURVEY_SUMMARY_SHEET]);
+  clearDayRows(sh, day);
+  var rows = SURVEY_QUESTIONS.map(function (q) {
+    var c = s.q[q.id];
+    var total = c.yes + c.no;
+    var pct = total ? Math.round((c.yes / total) * 100) : '';
+    return [day, q.label, c.yes, c.no, c.skipped, pct];
+  });
+  if (rows.length) {
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+  }
+}
+
+/** Rebuild "Top questions" for one day (the 10 most asked). */
+function writeTopQuestionsRows(day) {
+  var s = dailyStats(day);
+  var sh = ensureSheet(ss(), TOP_SHEET, LOG_SHEETS[TOP_SHEET]);
+  clearDayRows(sh, day);
+  var rows = topQuestions(s.top, 10).map(function (q) {
+    var unanswered = s.unanswered[q] || 0;
+    return [day, q, s.top[q], s.top[q] - unanswered, unanswered];
+  });
+  if (rows.length) {
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+  }
+}
+
+/** Rebuild the all-time Dashboard tab. */
+function writeDashboard() {
+  var sh = ensureSheet(ss(), DASHBOARD_SHEET, LOG_SHEETS[DASHBOARD_SHEET]);
+  if (sh.getLastRow() >= 2) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(sh.getLastColumn(), 1)).clearContent();
+  }
+  var q = allSearchTotals();
+  var sv = allSurveyTotals();
+  var rate = q.questions ? Math.round((q.answered / q.questions) * 100) : 0;
+  var rows = [
+    ['total_visits', countRows(VISIT_SHEET)],
+    ['total_questions', q.questions],
+    ['answer_rate_%', rate],
+    ['helped', q.helped],
+    ['not_helped', q.notHelped],
+    ['no_answer', q.noAnswer],
+    ['survey_responses', sv.n]
+  ];
+  SURVEY_QUESTIONS.forEach(function (question) {
+    var c = sv.q[question.id];
+    var total = c.yes + c.no;
+    rows.push(['survey_' + question.id + '_yes_%', total ? Math.round((c.yes / total) * 100) : 0]);
+  });
+  var now = isoDate(new Date());
+  rows.forEach(function (r) { r.push(now); });
+  sh.getRange(2, 1, rows.length, 3).setValues(rows);
+}
+
+function countRows(name) {
+  var sh = ss().getSheetByName(name);
+  return sh ? Math.max(sh.getLastRow() - 1, 0) : 0;
+}
+
+function allSearchTotals() {
+  var out = { questions: 0, answered: 0, helped: 0, notHelped: 0, noAnswer: 0 };
+  var sh = ss().getSheetByName('Searches');
+  if (!sh || sh.getLastRow() < 2) return out;
+  sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues().forEach(function (r) {
+    if (!String(r[1] || '').trim()) return;
+    out.questions++;
+    if (String(r[5] || '').trim() === 'yes') out.answered++;
+    else out.noAnswer++;
+    var o = String(r[3] || '').trim();
+    if (o === 'helped') out.helped++;
+    else if (o === 'not-helpful') out.notHelped++;
+  });
+  return out;
+}
+
+function allSurveyTotals() {
+  var out = { n: 0, q: {} };
+  SURVEY_QUESTIONS.forEach(function (q) { out.q[q.id] = { yes: 0, no: 0, skipped: 0 }; });
+  var sh = ss().getSheetByName(SURVEY_SHEET);
+  if (!sh || sh.getLastRow() < 2) return out;
+  sh.getRange(2, 1, sh.getLastRow() - 1, 11).getValues().forEach(function (r) {
+    out.n++;
+    SURVEY_QUESTIONS.forEach(function (q, i) {
+      var v = String(r[6 + i] || '').toLowerCase();
+      if (v === 'yes') out.q[q.id].yes++;
+      else if (v === 'no') out.q[q.id].no++;
+      else out.q[q.id].skipped++;
+    });
+  });
+  return out;
 }
 
 /* ---------------------------------------------------------------- helpers */
 
-/** Maintenance: erase all recorded visits, questions and report rows while
- *  keeping the header rows. Handy to clear test data before going live. */
+/** Maintenance: erase all recorded visits, questions, surveys and report rows
+ *  while keeping the header rows. Handy to clear test data before going live. */
 function resetLogs() {
-  [VISIT_SHEET, 'Searches', REPORT_SHEET].forEach(function (name) {
-    var sh = ss().getSheetByName(name);
-    if (sh && sh.getLastRow() >= 2) {
-      sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(sh.getLastColumn(), 1)).clearContent();
-    }
-  });
-  Logger.log('Cleared Visits, Searches and Daily report data rows.');
+  [VISIT_SHEET, 'Searches', REPORT_SHEET, SURVEY_SHEET, SURVEY_SUMMARY_SHEET, TOP_SHEET, DASHBOARD_SHEET]
+    .forEach(function (name) {
+      var sh = ss().getSheetByName(name);
+      if (sh && sh.getLastRow() >= 2) {
+        sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(sh.getLastColumn(), 1)).clearContent();
+      }
+    });
+  Logger.log('Cleared Visits, Searches, Survey, Survey summary, Top questions, Dashboard and Daily report data rows.');
 }
 
 function json(obj, callback) {
@@ -875,7 +1100,12 @@ function rows(name) {
 var LOG_SHEETS = {
   'Searches': ['timestamp', 'query', 'entry_id', 'outcome', 'session', 'answered'],
   'Visits': ['timestamp', 'date', 'session', 'device'],
-  'Daily report': ['date', 'visits', 'sessions', 'questions', 'answered', 'helped', 'not_helped', 'top_questions'],
+  'Survey responses': ['timestamp', 'date', 'session', 'device', 'entry_id', 'question_asked',
+                       'resolved', 'helpful', 'recommend', 'easy', 'overall'],
+  'Survey summary': ['date', 'survey_question', 'yes', 'no', 'skipped', 'yes_%'],
+  'Top questions': ['date', 'question', 'times_asked', 'answered', 'unanswered'],
+  'Dashboard': ['metric', 'value', 'last_updated'],
+  'Daily report': REPORT_HEADERS,
   'Needs content': ['question', 'why', 'last_seen']
 };
 

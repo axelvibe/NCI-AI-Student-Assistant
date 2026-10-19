@@ -46,7 +46,18 @@ const CONFIG = {
   historyTurns: 8,
 
   supportHubUrl: 'https://ncisupporthub.ncirl.ie/hc/en-ie',
-  wellbeingUrl: 'https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Counselling-Wellness-Service'
+  wellbeingUrl: 'https://www.ncirl.ie/Students/Student-Services/Support-Services/Student-Counselling-Wellness-Service',
+
+  // Post-answer satisfaction survey. Asked one question at a time and shown
+  // once per browser session so nobody is nagged after every answer.
+  surveyEnabled: true,
+  surveyMode: 'once-per-session',
+  surveyQuestions: [
+    { id: 'resolved',  label: 'Was your problem resolved?' },
+    { id: 'helpful',   label: 'Did you find it helpful?' },
+    { id: 'recommend', label: 'Would you recommend it?' },
+    { id: 'easy',      label: 'Was it easy to use?' }
+  ]
 };
 
 const AI_TIMEOUT_MS = 30000;
@@ -77,6 +88,20 @@ const SESSION_ID = (() => {
     return 's' + Date.now().toString(36);
   }
 })();
+
+// Sequential survey state. Lives for the whole page session; `done` stops the
+// survey appearing again after it has been shown once (survives reloads in the
+// same tab via sessionStorage, but resets for a new browser session).
+const SURVEY = {
+  done: (() => {
+    try { return sessionStorage.getItem('nciAssistantSurveyDone') === '1'; }
+    catch (e) { return false; }
+  })(),
+  qid: '',
+  question: '',
+  answers: {},
+  index: 0
+};
 
 function deviceType() {
   const ua = (navigator.userAgent || '').toLowerCase();
@@ -340,6 +365,101 @@ function sendFeedback(qid, question, helpful) {
   beacon({ mode: 'feedback', qid: qid, helpful: helpful ? 'true' : 'false', q: scrub(question).slice(0, 200), sid: SESSION_ID });
 }
 
+// Send the whole survey in ONE beacon. Four rapid requests would risk Google's
+// abuse throttle, so we batch the answers into a single call.
+function sendSurvey() {
+  const payload = {
+    mode: 'survey',
+    qid: SURVEY.qid,
+    q: scrub(SURVEY.question).slice(0, 200),
+    sid: SESSION_ID,
+    device: deviceType()
+  };
+  CONFIG.surveyQuestions.forEach(q => { payload[q.id] = SURVEY.answers[q.id] || ''; });
+  beacon(payload);
+}
+
+// Sequential satisfaction survey: asks one question at a time, advances after
+// each answer, then sends all answers together. Shown once per browser session.
+function appendSurvey(bubble, qid, question) {
+  if (!CONFIG.surveyEnabled || SURVEY.done) return;
+  SURVEY.done = true;
+  try { sessionStorage.setItem('nciAssistantSurveyDone', '1'); } catch (e) {}
+  SURVEY.qid = qid;
+  SURVEY.question = question;
+  SURVEY.answers = {};
+  SURVEY.index = 0;
+
+  const card = document.createElement('div');
+  card.className = 'survey-card';
+  const title = document.createElement('div');
+  title.className = 'survey-title';
+  title.textContent = 'Quick check';
+  const progress = document.createElement('div');
+  progress.className = 'survey-progress';
+  const body = document.createElement('div');
+  body.className = 'survey-body';
+  card.appendChild(title);
+  card.appendChild(progress);
+  card.appendChild(body);
+  bubble.appendChild(card);
+
+  function step(i) {
+    SURVEY.index = i;
+    progress.textContent = (i + 1) + ' of ' + CONFIG.surveyQuestions.length;
+    body.textContent = '';
+
+    const q = CONFIG.surveyQuestions[i];
+    const wrap = document.createElement('div');
+    wrap.className = 'survey-q';
+    const label = document.createElement('div');
+    label.className = 'survey-q-label';
+    label.textContent = q.label;
+    const opts = document.createElement('div');
+    opts.className = 'survey-opts';
+
+    let answered = false;
+    const make = (symbol, text, yes) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'fb-btn ' + (yes ? 'fb-up' : 'fb-down');
+      btn.setAttribute('aria-label', text);
+      btn.title = text;
+      btn.textContent = symbol;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        SURVEY.answers[q.id] = yes ? 'yes' : 'no';
+        opts.querySelectorAll('.fb-btn').forEach(b => { b.disabled = true; });
+        btn.classList.add('is-chosen');
+        setTimeout(() => {
+          if (i + 1 < CONFIG.surveyQuestions.length) step(i + 1);
+          else finish();
+        }, 400);
+      });
+      return btn;
+    };
+    opts.appendChild(make('\u{1F44D}', 'Yes', true));
+    opts.appendChild(make('\u{1F44E}', 'No', false));
+    wrap.appendChild(label);
+    wrap.appendChild(opts);
+    body.appendChild(wrap);
+  }
+
+  function finish() {
+    card.classList.add('is-done');
+    progress.textContent = '';
+    body.textContent = '';
+    const thanks = document.createElement('div');
+    thanks.className = 'survey-thanks';
+    thanks.textContent = 'Thanks \u2014 that helps NCI improve.';
+    body.appendChild(thanks);
+    sendSurvey();
+  }
+
+  step(0);
+}
+
 /* ---------------------------------------------------------------------
    6. DISTRESS / WELLBEING
    --------------------------------------------------------------------- */
@@ -592,10 +712,10 @@ async function sendMessage(rawText) {
   const qid = newId('q');
 
   if (ai === null) {
-    appendAssistantText(
-      'Sorry, I could not reach the NCI assistant just now. Please check your connection and try again, or contact the NCI Support Hub: ' + CONFIG.supportHubUrl,
-      []
-    );
+    const bubble = appendAssistantBubble();
+    renderRichText(bubble,
+      'Sorry, I could not reach the NCI assistant just now. Please check your connection and try again, or contact the NCI Support Hub: ' + CONFIG.supportHubUrl);
+    appendSurvey(bubble, qid, text);
     logQuestion(text, false, qid);
   } else if (ai.refused) {
     const bubble = appendAssistantBubble();
@@ -603,6 +723,7 @@ async function sendMessage(rawText) {
       'I don\'t have enough verified information to answer that one confidently, so I won\'t guess.\n\n' +
       'You can find the answer on the NCI Support Hub, or ask Student Services directly.');
     appendSources(bubble, state.sources.filter(s => s.id === 'support-hub' || s.id === 'student-services'));
+    appendSurvey(bubble, qid, text);
     logQuestion(text, false, qid);
   } else {
     const bubble = appendAssistantBubble();
@@ -610,6 +731,7 @@ async function sendMessage(rawText) {
     appendSources(bubble, ai.sources);
     if (isDistressed(text)) appendSupportCard(bubble);
     appendFeedback(bubble, qid, text);
+    appendSurvey(bubble, qid, text);
     scrollToBottom();
     logQuestion(text, true, qid);
 
