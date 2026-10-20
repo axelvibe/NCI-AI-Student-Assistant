@@ -350,6 +350,15 @@ function beacon(params) {
   const url = aiEndpointUrl(params);
   if (!url) return;
   const bust = url + (url.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now() + Math.random().toString(36).slice(2, 7);
+  // fire-and-forget: no response is needed, so use a no-cors fetch. Unlike a
+  // JSONP <script>, this does not look like a cross-site script load, which
+  // Google sometimes rejects with a 400 error page.
+  if (typeof fetch === 'function') {
+    try {
+      fetch(bust, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(() => {});
+      return;
+    } catch (e) {}
+  }
   jsonp(bust, 8000).catch(() => {});
 }
 
