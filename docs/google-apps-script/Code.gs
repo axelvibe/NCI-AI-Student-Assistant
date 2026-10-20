@@ -1,19 +1,23 @@
 /**
+ * LEGACY - kept for reference only. Do not deploy this file.
+ *
+ * The current site uses docs/google-apps-script/Proxy.gs (AI answers, visits,
+ * searches, feedback and the satisfaction survey). If this old search-only
+ * script is still in the same Apps Script project, delete it so it cannot
+ * shadow Proxy.gs's doGet/doPost handlers.
+ *
  * NCI Student Assistant - search analytics
  * ----------------------------------------
  * Appends one row per search to a Google Sheet and serves the most-searched
  * questions back to the site.
  *
- * Contract expected by app.js (see CONFIG.statsEndpoint in app.js):
+ * Contract expected by the old app.js (see CONFIG.statsEndpoint):
  *
  *   POST  body (text/plain JSON):  { "text": "...", "entryId": "...", "timestamp": "..." }
  *         -> appends a row. The site never reads the response.
  *
  *   GET   ?mode=top
  *         -> JSON:  [ { "text": "...", "count": 12 }, ... ]   (most searched first)
- *
- * SETUP: see docs/GOOGLE-SETUP.md. Run setup() once, then deploy as a Web App.
- *        Required execute-as: "Me". Required access: "Anyone".
  */
 
 var SHEET_NAME = 'Searches';
@@ -154,7 +158,7 @@ function testTop() {
 /** Run this to clear the log and start fresh. */
 function resetLog() {
   var sh = sheet();
-  if (sh.getLastRow() > 0) sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumns()).clearContent();
+  if (sh.getLastRow() > 0) sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).clearContent();
   sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]);
   Logger.log('Log cleared.');
 }

@@ -691,7 +691,7 @@ function digest() {
   var agg = {};
   rows_.forEach(function (r) {
     var q = String(r[0] || '').trim();
-    var outcome = String(r[3] || '').trim();
+    var outcome = String(r[2] || '').trim();
     if (!q || q === '(blank)') return;
     if (!agg[q]) agg[q] = { question: q, asked: 0, refused: 0, unhappy: 0, last: '' };
     agg[q].asked++;
@@ -714,10 +714,9 @@ function digest() {
 
 /** Writes the digest into its own tab. Run on a trigger, or manually. */
 function refreshDigestTab() {
-  var dg = ss().getSheetByName(DIGEST_SHEET);
-  if (!dg) return;
-  if (dg.getLastRow() > 0) {
-    dg.getRange(1, 1, dg.getLastRow(), dg.getLastColumns()).clearContent();
+  var dg = ensureSheet(ss(), DIGEST_SHEET, LOG_SHEETS[DIGEST_SHEET]);
+  if (dg.getLastRow() >= 2) {
+    dg.getRange(2, 1, dg.getLastRow() - 1, Math.max(dg.getLastColumn(), 1)).clearContent();
   }
   var items = digest();
   if (!items.length) {
@@ -802,6 +801,67 @@ function refreshReports() {
   return day;
 }
 
+/** Rebuild every derived tab for every date that appears in the raw logs.
+ *  Run once after enabling reporting, or after backfilling data, so the
+ *  Dashboard and per-day tabs always reflect the raw records. */
+function rebuildAllReports() {
+  var days = {};
+  var add = function (sh, col) {
+    if (!sh || sh.getLastRow() < 2) return;
+    sh.getRange(2, col, sh.getLastRow() - 1, 1).getValues().forEach(function (r) {
+      var d = rowDay(r[0]);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) days[d] = true;
+    });
+  };
+  add(ss().getSheetByName(VISIT_SHEET), 2);
+  add(ss().getSheetByName('Searches'), 1);
+  add(ss().getSheetByName(SURVEY_SHEET), 2);
+
+  var list = Object.keys(days).sort();
+  list.forEach(function (day) {
+    writeDailyReportRow(day);
+    writeSurveySummaryRows(day);
+    writeTopQuestionsRows(day);
+  });
+  writeDashboard();
+  Logger.log('Rebuilt reports for ' + list.length + ' day(s): ' + (list.join(', ') || '(none)'));
+  return list;
+}
+
+/** Diagnostic: confirms every reporting tab exists with the expected header
+ *  and logs its row count. Run from the editor and read the Execution log. */
+function checkWiring() {
+  var book = ss();
+  var problems = [];
+
+  Object.keys(LOG_SHEETS).forEach(function (name) {
+    var sh = book.getSheetByName(name);
+    if (!sh) { problems.push(name + ': sheet missing'); return; }
+    var want = LOG_SHEETS[name];
+    var got = sh.getRange(1, 1, 1, want.length).getValues()[0];
+    for (var i = 0; i < want.length; i++) {
+      if (String(got[i]) !== want[i]) {
+        problems.push(name + ': column ' + (i + 1) + " is '" + got[i] + "', expected '" + want[i] + "'");
+      }
+    }
+    Logger.log(name + ': ' + Math.max(sh.getLastRow() - 1, 0) + ' data row(s)');
+  });
+
+  var sv = book.getSheetByName(SURVEY_SHEET);
+  if (sv && sv.getLastRow() >= 2) {
+    Logger.log('latest survey: ' + JSON.stringify(sv.getRange(sv.getLastRow(), 1, 1, 11).getValues()[0]));
+  } else {
+    Logger.log('latest survey: none yet');
+  }
+
+  if (problems.length) {
+    Logger.log('WIRING PROBLEMS:\n- ' + problems.join('\n- '));
+  } else {
+    Logger.log('WIRING OK: every tab and header matches the reporting code.');
+  }
+  return problems;
+}
+
 /** Manual test: builds today's report and returns it (no email). */
 function previewDailyReport() {
   return dailyReportText(isoDate(new Date()));
@@ -859,8 +919,16 @@ function dailyStats(day) {
 }
 
 function rowDay(ts) {
-  if (ts instanceof Date) return Utilities.formatDate(ts, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  return String(ts || '').slice(0, 10);
+  var tz = Session.getScriptTimeZone();
+  if (ts instanceof Date) return Utilities.formatDate(ts, tz, 'yyyy-MM-dd');
+  var s = String(ts || '');
+  // Full ISO timestamps are stored in UTC; attribute them to the local day so
+  // questions asked after midnight Irish time are not counted on the day before.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+    var d = new Date(s);
+    if (!isNaN(d.getTime())) return Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+  }
+  return s.slice(0, 10);
 }
 
 function topQuestions(top, limit) {
