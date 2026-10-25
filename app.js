@@ -323,8 +323,13 @@ async function askAI(question, sources, kb) {
   });
   if (!url) return null;
 
-  let payload;
-  try { payload = await jsonp(url); } catch (e) { return null; }
+  let payload = null;
+  try { payload = await jsonp(url); } catch (e) { payload = null; }
+  if (!payload) {
+    // A transient 400 from Google is worth one retry with a fresh URL.
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    try { payload = await jsonp(bustUrl(url)); } catch (e) { payload = null; }
+  }
   if (!payload || payload.ok !== true) return null;
   if (payload.answered !== true) {
     return { answer: '', sources: [], refused: true };
@@ -346,14 +351,23 @@ async function askAI(question, sources, kb) {
 // carry personal data - just an anonymous session id and a device type.
 // A unique _t parameter is appended so Google never serves a cached response
 // for a repeated URL (which would skip re-running the logger).
-function beacon(params) {
+function bustUrl(url) {
+  return url + (url.indexOf('?') === -1 ? '?' : '&') + '_t=' +
+    Date.now() + Math.random().toString(36).slice(2, 8);
+}
+
+function beacon(params, attempt) {
   const url = aiEndpointUrl(params);
   if (!url) return;
-  const bust = url + (url.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now() + Math.random().toString(36).slice(2, 7);
-  // Use the same JSONP transport as the AI call. Cross-origin no-cors fetch is
-  // rejected by Google with a 400 for Apps Script web apps, while a <script>
-  // request works. The response is ignored; this is fire-and-forget.
-  jsonp(bust, 8000).catch(() => {});
+  const tries = attempt || 0;
+  // JSONP <script> is the transport Google accepts from the site. Google can
+  // briefly return a 400 when several requests arrive at once, so retry a
+  // couple of times after a pause, with a fresh URL.
+  jsonp(bustUrl(url), 8000).then(res => {
+    if (!res && tries < 2) {
+      setTimeout(() => beacon(params, tries + 1), 1500 * (tries + 1));
+    }
+  }).catch(() => {});
 }
 
 function recordVisit() {

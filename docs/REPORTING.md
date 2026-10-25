@@ -129,3 +129,15 @@ use `previewDailyReport()` or `refreshReports()`.
   not shadow `Proxy.gs`.
 - `docs/GOOGLE-SETUP.md` — describes the old Code.gs flow; superseded by
   `docs/SETUP_AI.md` for the current proxy.
+
+## Troubleshooting: HTTP 400 responses
+
+Apps Script can answer with an HTML `400` (an "unusual traffic" page) when several
+requests arrive at once. It is a burst throttle, not a bug in the sheet code. The
+site retries failed beacons twice, with a pause and a fresh URL, so occasional 400s
+recover by themselves — in DevTools you will see a second identical `mode=...`
+request a couple of seconds later.
+
+If every request returns 400 for several minutes, stop testing for 10–15 minutes and
+try again. Normal student use (one visit, a few questions, one survey) stays well
+below the burst threshold.
