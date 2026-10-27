@@ -740,12 +740,7 @@ var REPORT_EMAIL_PROPERTY = 'REPORT_EMAIL';
  *  setupReporting()            -> email the deploying account, 08:00 daily
  *  setupReporting('x@y.com')   -> email someone else instead           */
 function setupReporting(email) {
-  if (email) PropertiesService.getScriptProperties().setProperty(REPORT_EMAIL_PROPERTY, String(email).trim());
-  ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (t.getHandlerFunction() === 'sendDailyReport') ScriptApp.deleteTrigger(t);
-  });
-  ScriptApp.newTrigger('sendDailyReport').timeBased().everyDays(1).atHour(8).create();
-  Logger.log('Daily report scheduled for ~08:00 each day. Recipient: ' + reportRecipient());
+  setupMorningReport(email);
 }
 
 /** Easiest way to switch on the daily report: run this from the editor, type the
@@ -757,7 +752,7 @@ function configureReporting() {
     '\n\nCurrent setting: ' + (current || '(your account)');
   var answer = Browser.inputBox('NCI Student Assistant', prompt, Browser.Buttons.OK_CANCEL);
   if (String(answer).toLowerCase() === 'cancel') return;
-  setupReporting(String(answer || '').trim() || null);
+  setupMorningReport(String(answer || '').trim() || null);
   Logger.log('Done. The report will be emailed to: ' + reportRecipient());
 }
 
@@ -788,6 +783,37 @@ function sendDailyReport() {
     });
   }
   return text;
+}
+
+/** Emails today's full report (Dashboard-style summary) at ~08:00. */
+function sendMorningReport() {
+  var day = isoDate(new Date());
+  var text = dailyReportText(day);
+  writeDailyReportRow(day);
+  writeSurveySummaryRows(day);
+  writeTopQuestionsRows(day);
+  writeDashboard();
+  var to = reportRecipient();
+  if (to) {
+    MailApp.sendEmail({
+      to: to,
+      subject: 'NCI Student Assistant - morning report ' + day,
+      body: text
+    });
+  }
+  return text;
+}
+
+/** Run ONCE from the editor to email today's report at ~08:00 every day. */
+function setupMorningReport(email) {
+  if (email) PropertiesService.getScriptProperties().setProperty(REPORT_EMAIL_PROPERTY, String(email).trim());
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'sendMorningReport' || t.getHandlerFunction() === 'sendDailyReport') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+  ScriptApp.newTrigger('sendMorningReport').timeBased().everyDays(1).atHour(8).create();
+  Logger.log('Morning report (today) scheduled for ~08:00 each day. Recipient: ' + reportRecipient());
 }
 
 /** Rebuild every reporting tab for TODAY. Handy while testing. */
