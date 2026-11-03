@@ -1,0 +1,610 @@
+{
+ "CASES": [
+  [
+   "What are the start and end dates of the semester?",
+   "semester-dates"
+  ],
+  [
+   "When does reading week start?",
+   "reading-week"
+  ],
+  [
+   "When is my assignment due?",
+   "assignment-due-date"
+  ],
+  [
+   "Which referencing style should I use?",
+   "referencing-style"
+  ],
+  [
+   "When and where is my exam this semester?",
+   "exam-when-where"
+  ],
+  [
+   "What is the required word count for my assignment?",
+   "assignment-word-count"
+  ],
+  [
+   "How do I apply for an assignment extension?",
+   "assignment-extension"
+  ],
+  [
+   "How do I resit an exam?",
+   "resit-exam"
+  ],
+  [
+   "When will my exam results be released?",
+   "results-release-date"
+  ],
+  [
+   "Who is my programme co-ordinator?",
+   "programme-coordinator"
+  ],
+  [
+   "How do I access Moodle?",
+   "moodle-access"
+  ],
+  [
+   "Where do I find my lecture material?",
+   "lecture-material"
+  ],
+  [
+   "How do I submit my assignment on Moodle?",
+   "submit-assignment-moodle"
+  ],
+  [
+   "How do I register for my seat for the new year?",
+   "register-on-seat"
+  ],
+  [
+   "How do I request a reference letter from NCI?",
+   "reference-letter"
+  ],
+  [
+   "How do I access the library online?",
+   "library-online-access"
+  ],
+  [
+   "How do I borrow books from the library?",
+   "library-borrow-books"
+  ],
+  [
+   "How do I renew a library book?",
+   "library-renew-books"
+  ],
+  [
+   "How much is the tuition fee?",
+   "tuition-fee"
+  ],
+  [
+   "Are there scholarships or financial support available?",
+   "scholarships-financial-support"
+  ],
+  [
+   "What clubs and societies can I join?",
+   "clubs-societies"
+  ],
+  [
+   "When is the orientation programme?",
+   "orientation"
+  ],
+  [
+   "How do I contact the Careers service?",
+   "career-services"
+  ],
+  [
+   "What internship or placement opportunities are there?",
+   "internship-placement"
+  ],
+  [
+   "How do I reset my NCI password?",
+   "reset-password"
+  ],
+  [
+   "How do I connect to NCI Wi-Fi?",
+   "wifi-access"
+  ],
+  [
+   "What free software is available to me?",
+   "free-software"
+  ],
+  [
+   "How do I book a library study room?",
+   "library-study-room"
+  ],
+  [
+   "What are the requirements for my MSc dissertation?",
+   "msc-dissertation"
+  ],
+  [
+   "What do I need to do to graduate?",
+   "graduation-requirements"
+  ],
+  [
+   "Where can I find the exam timetable?",
+   "exam-timetable"
+  ],
+  [
+   "How do I check my exam results?",
+   "exam-results"
+  ],
+  [
+   "How do I check in to my class with the SEAtS app?",
+   "seats-attendance"
+  ],
+  [
+   "What happens if I submit my assignment late?",
+   "late-submission-penalty"
+  ],
+  [
+   "Can I defer an exam?",
+   "exam-deferral"
+  ],
+  [
+   "What happens if I fail a module, and can I repeat it?",
+   "repeat-exam"
+  ],
+  [
+   "How do I contact Academic Operations?",
+   "academic-operations"
+  ],
+  [
+   "What is the NCI Support Hub?",
+   "support-hub"
+  ],
+  [
+   "What are the main student systems and how do I log in?",
+   "student-systems"
+  ],
+  [
+   "Where can I get help if I am struggling?",
+   "counselling-wellbeing"
+  ]
+ ],
+ "VARIANTS": [
+  [
+   "When does the semester start and finish?",
+   "semester-dates"
+  ],
+  [
+   "semester start date",
+   "semester-dates"
+  ],
+  [
+   "When is reading week?",
+   "reading-week"
+  ],
+  [
+   "reading week commencing date",
+   "reading-week"
+  ],
+  [
+   "What is the deadline for my assignment?",
+   "assignment-due-date"
+  ],
+  [
+   "assignment submission deadline",
+   "assignment-due-date"
+  ],
+  [
+   "How do I reference correctly?",
+   "referencing-style"
+  ],
+  [
+   "What is the referencing style used at NCI?",
+   "referencing-style"
+  ],
+  [
+   "What time is my exam?",
+   "exam-when-where"
+  ],
+  [
+   "where do I sit my exam?",
+   "exam-when-where"
+  ],
+  [
+   "how many words does my assignment need",
+   "assignment-word-count"
+  ],
+  [
+   "word limit for my essay",
+   "assignment-word-count"
+  ],
+  [
+   "how do I get more time for my assignment",
+   "assignment-extension"
+  ],
+  [
+   "request a coursework extension",
+   "assignment-extension"
+  ],
+  [
+   "how do I repeat an exam",
+   "resit-exam"
+  ],
+  [
+   "what happens if I fail an exam",
+   "resit-exam"
+  ],
+  [
+   "when do results go live",
+   "results-release-date"
+  ],
+  [
+   "results release date",
+   "results-release-date"
+  ],
+  [
+   "programme coordinator contact",
+   "programme-coordinator"
+  ],
+  [
+   "who should I talk to about my course",
+   "programme-coordinator"
+  ],
+  [
+   "moodle login",
+   "moodle-access"
+  ],
+  [
+   "how do I get into moodle",
+   "moodle-access"
+  ],
+  [
+   "where are my lecture slides",
+   "lecture-material"
+  ],
+  [
+   "find my class notes",
+   "lecture-material"
+  ],
+  [
+   "how to upload my assignment",
+   "submit-assignment-moodle"
+  ],
+  [
+   "turnitin submission",
+   "submit-assignment-moodle"
+  ],
+  [
+   "how do I re-register",
+   "register-on-seat"
+  ],
+  [
+   "returning student registration",
+   "register-on-seat"
+  ],
+  [
+   "how do I get a reference letter",
+   "reference-letter"
+  ],
+  [
+   "I need proof of my student status",
+   "reference-letter"
+  ],
+  [
+   "library e-resources",
+   "library-online-access"
+  ],
+  [
+   "online library login",
+   "library-online-access"
+  ],
+  [
+   "how do I get a library book",
+   "library-borrow-books"
+  ],
+  [
+   "library loans for postgraduates",
+   "library-borrow-books"
+  ],
+  [
+   "renew my books",
+   "library-renew-books"
+  ],
+  [
+   "can I keep the book longer",
+   "library-renew-books"
+  ],
+  [
+   "what are my fees",
+   "tuition-fee"
+  ],
+  [
+   "cost of my masters",
+   "tuition-fee"
+  ],
+  [
+   "can I get a scholarship",
+   "scholarships-financial-support"
+  ],
+  [
+   "funding or bursary",
+   "scholarships-financial-support"
+  ],
+  [
+   "student societies list",
+   "clubs-societies"
+  ],
+  [
+   "is there a sports club",
+   "clubs-societies"
+  ],
+  [
+   "induction session",
+   "orientation"
+  ],
+  [
+   "new student welcome session",
+   "orientation"
+  ],
+  [
+   "careers office contact details",
+   "career-services"
+  ],
+  [
+   "career advice appointment",
+   "career-services"
+  ],
+  [
+   "work placement",
+   "internship-placement"
+  ],
+  [
+   "how do I find an internship",
+   "internship-placement"
+  ],
+  [
+   "I forgot my password",
+   "reset-password"
+  ],
+  [
+   "change my password",
+   "reset-password"
+  ],
+  [
+   "eduroam login",
+   "wifi-access"
+  ],
+  [
+   "wireless network on campus",
+   "wifi-access"
+  ],
+  [
+   "software licences for students",
+   "free-software"
+  ],
+  [
+   "install office on my laptop",
+   "free-software"
+  ],
+  [
+   "group study room booking",
+   "library-study-room"
+  ],
+  [
+   "book a room in the library",
+   "library-study-room"
+  ],
+  [
+   "thesis requirements",
+   "msc-dissertation"
+  ],
+  [
+   "how long is my dissertation",
+   "msc-dissertation"
+  ],
+  [
+   "when is my graduation ceremony",
+   "graduation-requirements"
+  ],
+  [
+   "graduation ticket and gown",
+   "graduation-requirements"
+  ],
+  [
+   "exam timetable download",
+   "exam-timetable"
+  ],
+  [
+   "my exam schedule pdf",
+   "exam-timetable"
+  ],
+  [
+   "where can I see my grades",
+   "exam-results"
+  ],
+  [
+   "view my results on MyDetails",
+   "exam-results"
+  ],
+  [
+   "Do I have to attend every class?",
+   "seats-attendance"
+  ],
+  [
+   "How is my attendance recorded?",
+   "seats-attendance"
+  ],
+  [
+   "Will I lose marks for a late submission?",
+   "late-submission-penalty"
+  ],
+  [
+   "How much is deducted per day late?",
+   "late-submission-penalty"
+  ],
+  [
+   "What if I cannot sit my exam?",
+   "exam-deferral"
+  ],
+  [
+   "Can I postpone an exam?",
+   "exam-deferral"
+  ],
+  [
+   "Can I repeat a module I failed?",
+   "repeat-exam"
+  ],
+  [
+   "What is a repeat year?",
+   "repeat-exam"
+  ],
+  [
+   "Who do I contact about my grades?",
+   "academic-operations"
+  ],
+  [
+   "What are Academic Operations hours?",
+   "academic-operations"
+  ],
+  [
+   "Where do I go if I need help?",
+   "support-hub"
+  ],
+  [
+   "What is the Support Hub?",
+   "support-hub"
+  ],
+  [
+   "What is my student username?",
+   "student-systems"
+  ],
+  [
+   "Where do I find my details?",
+   "student-systems"
+  ],
+  [
+   "I am struggling, who can I talk to?",
+   "counselling-wellbeing"
+  ],
+  [
+   "I feel anxious about my studies",
+   "counselling-wellbeing"
+  ]
+ ],
+ "TYPOS": [
+  [
+   "moodle",
+   "moodle-access"
+  ],
+  [
+   "wifi passwrd",
+   "wifi-access"
+  ],
+  [
+   "extend my assignmnt",
+   "assignment-extension"
+  ],
+  [
+   "resit exam",
+   "resit-exam"
+  ],
+  [
+   "libary books",
+   "library-borrow-books"
+  ],
+  [
+   "word count",
+   "assignment-word-count"
+  ],
+  [
+   "exam when",
+   "exam-when-where"
+  ],
+  [
+   "scholarships",
+   "scholarships-financial-support"
+  ],
+  [
+   "referencing",
+   "referencing-style"
+  ]
+ ],
+ "NEGATIVES": [
+  [
+   "what is the weather in Dublin tomorrow",
+   "NO-MATCH"
+  ],
+  [
+   "tell me a joke",
+   "NO-MATCH"
+  ],
+  [
+   "who won the World Cup in 1998",
+   "NO-MATCH"
+  ],
+  [
+   "what time does the canteen open",
+   "NO-MATCH"
+  ],
+  [
+   "can you write my dissertation for me",
+   "NO-MATCH"
+  ],
+  [
+   "what is my grade",
+   "NO-MATCH"
+  ],
+  [
+   "book me a taxi to campus",
+   "NO-MATCH"
+  ],
+  [
+   "order me a coffee",
+   "NO-MATCH"
+  ],
+  [
+   "what is the capital of France",
+   "NO-MATCH"
+  ],
+  [
+   "translate this into Irish",
+   "NO-MATCH"
+  ],
+  [
+   "how do I fix my laptop screen",
+   "NO-MATCH"
+  ],
+  [
+   "what is the best restaurant near campus",
+   "NO-MATCH"
+  ],
+  [
+   "play some music",
+   "NO-MATCH"
+  ],
+  [
+   "what is 2 plus 2",
+   "NO-MATCH"
+  ],
+  [
+   "how do I change my car tyre",
+   "NO-MATCH"
+  ],
+  [
+   "who should I vote for",
+   "NO-MATCH"
+  ],
+  [
+   "what is the population of Dublin",
+   "NO-MATCH"
+  ],
+  [
+   "give me a medical diagnosis",
+   "NO-MATCH"
+  ],
+  [
+   "where can I buy a bicycle",
+   "NO-MATCH"
+  ],
+  [
+   "how do I get a passport",
+   "NO-MATCH"
+  ],
+  [
+   "what is the wifi password at home",
+   "NO-MATCH"
+  ]
+ ]
+}

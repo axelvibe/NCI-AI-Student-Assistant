@@ -19,11 +19,15 @@ The **only** script to deploy is `docs/google-apps-script/Proxy.gs`.
 1. Run → `setApiKey`. A popup appears; paste the key (`sk-...`) and accept.
 2. The key is stored in Script Properties, not in the code.
 
-## 3) Create the sheets
+## 3) Create or upgrade the sheets
 1. Run → `setup` once.
 2. It creates every tab and, if the `Daily report` header is the old layout, clears
    its data rows so the new 12-column layout starts clean.
-3. Expected log: `Sheets ready: Searches, Visits, Survey responses, Survey summary, Top questions, Dashboard, Daily report, Needs content.`
+3. If `Searches` already has the old six-column layout, `setup` migrates it in place:
+   old rows are preserved, `query`/`entry_id`/`session` are renamed to
+   `question`/`question_id`/`session_id`, and the answer, source, model, timing,
+   resolved and feedback columns are appended.
+4. Expected log: `Sheets ready: Searches, Visits, Survey responses, Survey summary, Top questions, Dashboard, Daily report, Needs content.`
 
 ## 4) Deploy as a Web App
 1. Deploy → New deployment → type **Web app**.
@@ -38,8 +42,12 @@ The **only** script to deploy is `docs/google-apps-script/Proxy.gs`.
 1. Open `<the /exec URL>?mode=health` in a browser.
    Expect `{"ok":true,"keyPresent":true,"model":"gpt-4o"}`.
 2. Run → `checkWiring` and read the log — it confirms every tab and header.
-3. Ask a question on the live site, answer the 4-thumb survey, then run
-   `refreshReports()` and check the tabs.
+3. Run → `testLogging` and confirm it appends one labelled row to `Searches`.
+4. Ask a question on the live site. The row should appear in `Searches` immediately
+   with the question, the answer, the sources, the model and `answered = yes`.
+5. Click a thumbs control, answer the 4-question survey, then run
+   `refreshReports()` and check the tabs. The same row should now show
+   `resolved` / `feedback`, and the survey tab should have a new response.
 
 ## 6) Turn on the daily email
 1. Run → `configureReporting()` and type the recipient (blank = your own account).

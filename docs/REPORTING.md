@@ -31,15 +31,36 @@ raw tabs, so they can always be regenerated — never type into them by hand.
 | Column | Meaning |
 | --- | --- |
 | `timestamp` | UTC ISO time the question was asked |
-| `query` | the scrubbed question text (max 200 chars) |
-| `entry_id` | question id, used to attach the "did this help?" feedback |
-| `outcome` | `ai` (answered), `no-answer` (refused), `helped`, `not-helpful` |
-| `session` | anonymous per-tab session id |
-| `answered` | `yes` if the assistant produced a grounded answer, else `no` |
+| `question` | the scrubbed question text (max 200 chars) |
+| `question_id` | anonymous question id, used to attach feedback and the survey |
+| `outcome` | `answered`, `refused`, `no-sources`, `no-api-key`, `error`, or `feedback-only` |
+| `session_id` | anonymous per-tab session id |
+| `answered` | `yes` if the student received an answer, else `no` |
+| `date` | local (Europe/Dublin) date, used for day grouping |
+| `answer` | the answer the student actually saw (scrubbed, max 3,000 chars) |
+| `sources` | official pages cited in the answer, one per line |
+| `model` | model that produced the answer (e.g. `gpt-4o`) |
+| `response_ms` | server-side response time in milliseconds |
+| `resolved` | `yes` / `no` / blank — survey or thumbs feedback |
+| `feedback` | `helped` / `not-helpful` / blank — the thumbs control |
+| `feedback_at` | UTC ISO time the feedback was recorded |
+| `error` | error or refusal reason, when applicable |
 
-Note: one question produces one row. The later "did this help?" click updates the
-`outcome` of that row in place; a standalone feedback row is only added if the
-question id cannot be found.
+Notes:
+
+- The proxy writes the row **as the answer is produced**, so the answer text is
+  recorded even if the browser closes immediately afterwards. The browser only
+  sends a fallback `mode=log` request when the proxy reports `logged: false`.
+- One question produces one row. A later "did this help?" click updates `resolved`,
+  `feedback` and `feedback_at` in place and leaves `outcome` intact. A standalone
+  `feedback-only` row is added only if the question id cannot be found.
+- `setup()` runs a migration that preserves old rows and renames legacy columns:
+  `query → question`, `entry_id → question_id`, `session → session_id`. It also
+  derives `date` and `answered` where they are missing.
+- Historic rows keep their data but will have blank `answer`, `sources`, `model`,
+  `response_ms`, `resolved`, `feedback` and `feedback_at`, because the old proxy
+  never captured them. Complete answer records start with the first question after
+  the upgraded proxy is deployed.
 
 ### `Visits`
 | Column | Meaning |
@@ -90,7 +111,9 @@ Run these from the Apps Script editor (function dropdown → Run):
 
 | Function | What it does |
 | --- | --- |
+| `setup()` | Creates missing tabs and upgrades an old `Searches` sheet to the current schema without deleting rows. Run once after deploying. |
 | `checkWiring()` | Validates every tab exists with the expected header; logs row counts. Run this first if anything looks wrong. |
+| `testLogging()` | Appends one labelled test row to `Searches` and logs the result. Use it to confirm the sheet and headers are writable. |
 | `refreshReports()` | Rebuilds today's `Daily report` / `Survey summary` / `Top questions` / `Dashboard`. |
 | `rebuildAllReports()` | Rebuilds those tabs for **every** date found in the raw logs (use after enabling reporting or backfilling). |
 | `refreshDigestTab()` | Rebuilds `Needs content`. |

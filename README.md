@@ -43,10 +43,15 @@ Distress or wellbeing questions also trigger a counselling-support card.
 
 ## Testing
 
-There is no automated browser test suite wired into CI. Practical checks:
-
+- `python3 test/run_tests.py` runs the **real** retrieval engine under
+  JavaScriptCore against the 150 labelled questions in `test/cases.json`, then
+  checks the `Proxy.gs` logging contract with an in-memory sheet mock.
+- `python3 test/run_tests.py https://axelvibe.github.io/NCI-AI-Student-Assistant`
+  downloads the deployed `app.js` and `knowledge.json` and runs the same retrieval
+  suite against them.
 - `check_links.py` validates every source URL (see below).
 - `checkWiring()` in Apps Script validates every reporting tab and header.
+- `testLogging()` appends one labelled row to `Searches` to prove logging works.
 - `previewDailyReport()` in Apps Script returns today's report without emailing.
 
 ## Accuracy and sourcing
@@ -74,7 +79,9 @@ students should still open the linked official page before making plans.
 
 No personal data is collected, stored or displayed. Questions are scrubbed in the
 browser and again in Apps Script, so student numbers, email addresses and passwords
-are replaced before anything is stored. The assistant asks for no name, student
+are replaced before anything is stored. The assistant's reply is stored with the
+question so the team can review answer quality; it is scrubbed the same way, which
+keeps dates, fees and official links intact. The assistant asks for no name, student
 number or email. Records are anonymous: a random per-tab session id and a device
 type (desktop/mobile/tablet). The satisfaction survey is anonymous and optional.
 
@@ -111,7 +118,7 @@ browsers pick up the new files.
 
 ## Not included
 
-No build tooling and no automated browser tests in CI. Re-checking the knowledge base
+No build tooling and no browser automation in CI. Re-checking the knowledge base
 against the live NCI site is a manual step, and it is the step that matters most.
 
 ## Checking the source links

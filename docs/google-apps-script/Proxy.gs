@@ -73,6 +73,12 @@ var SURVEY_QUESTIONS = [
 var REPORT_HEADERS = ['date', 'visits', 'unique_sessions', 'questions', 'answered',
   'answered_%', 'helped', 'helped_%', 'not_helped', 'no_feedback', 'no_answer', 'surveys'];
 
+// Raw question log. The first six columns keep their original positions so old
+// reporting code and old rows continue to work; the new columns are appended.
+var SEARCH_HEADERS = ['timestamp', 'question', 'question_id', 'outcome', 'session_id',
+  'answered', 'date', 'answer', 'sources', 'model', 'response_ms', 'resolved',
+  'feedback', 'feedback_at', 'error'];
+
 var OPENAI_KEY_PROPERTY = 'OPENAI_API_KEY';
 
 var SUPPORT_HUB = 'https://ncisupporthub.ncirl.ie/hc/en-ie';
@@ -119,8 +125,9 @@ function setup() {
     }
   }
 
+  ensureSearchesSheet(ss);
   Object.keys(LOG_SHEETS).forEach(function (name) {
-    ensureSheet(ss, name, LOG_SHEETS[name]);
+    if (name !== 'Searches') ensureSheet(ss, name, LOG_SHEETS[name]);
   });
 
   Logger.log('Sheets ready: ' + Object.keys(LOG_SHEETS).join(', ') + '. ' +
@@ -139,6 +146,92 @@ function ensureSheet(ss, name, header) {
   }
   sh.setFrozenRows(1);
   return sh;
+}
+
+/** Create or upgrade the raw question log without throwing away old rows.
+ *  Legacy headers (query, entry_id, session, is_refusal) are mapped to the
+ *  current schema, and the missing answer/resolved/feedback columns are added. */
+function ensureSearchesSheet(book) {
+  var sh = book.getSheetByName('Searches');
+  if (!sh) sh = book.insertSheet('Searches');
+
+  var lastRow = Math.max(sh.getLastRow(), 1);
+  var lastCol = Math.max(sh.getLastColumn(), 1);
+  var values = sh.getRange(1, 1, lastRow, lastCol).getValues();
+  var current = values[0] || [];
+
+  var aliases = { query: 'question', entry_id: 'question_id', session: 'session_id' };
+  var normalised = current.map(function (header) {
+    var name = String(header || '').trim();
+    return aliases[name] || name;
+  });
+
+  var same = SEARCH_HEADERS.every(function (header, i) {
+    return normalised[i] === header;
+  });
+  if (same && sh.getMaxColumns() >= SEARCH_HEADERS.length) {
+    sh.setFrozenRows(1);
+    return sh;
+  }
+
+  var index = {};
+  normalised.forEach(function (header, i) {
+    if (header && index[header] == null) index[header] = i;
+  });
+  var refusalIndex = normalised.indexOf('is_refusal');
+
+  var rows = [];
+  for (var r = 1; r < values.length; r++) {
+    var source = values[r];
+    var row = SEARCH_HEADERS.map(function (header) {
+      if (header === 'outcome' && index[header] == null && refusalIndex !== -1) {
+        var flag = String(source[refusalIndex] || '').toLowerCase();
+        return flag === 'yes' ? 'refused' : (flag === 'no' ? 'answered' : '');
+      }
+      if (index[header] == null) return '';
+      var value = source[index[header]];
+      return value == null ? '' : value;
+    });
+
+    var dateIndex = SEARCH_HEADERS.indexOf('date');
+    if (!row[dateIndex]) row[dateIndex] = dateFromTimestamp(row[0]);
+
+    var answeredIndex = SEARCH_HEADERS.indexOf('answered');
+    if (!row[answeredIndex]) {
+      var outcome = String(row[SEARCH_HEADERS.indexOf('outcome')] || '').toLowerCase();
+      row[answeredIndex] = (
+        outcome === 'answered' || outcome === 'ai' ||
+        outcome === 'helped' || outcome === 'not-helpful'
+      ) ? 'yes' : (outcome ? 'no' : '');
+    }
+    rows.push(row);
+  }
+
+  if (sh.getMaxRows() < rows.length + 1) {
+    sh.insertRowsAfter(sh.getMaxRows(), rows.length + 1 - sh.getMaxRows());
+  }
+  if (sh.getMaxColumns() < SEARCH_HEADERS.length) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), SEARCH_HEADERS.length - sh.getMaxColumns());
+  }
+  sh.clearContents();
+  sh.getRange(1, 1, 1, SEARCH_HEADERS.length).setValues([SEARCH_HEADERS]);
+  if (rows.length) {
+    sh.getRange(2, 1, rows.length, SEARCH_HEADERS.length).setValues(rows);
+  }
+  sh.setFrozenRows(1);
+  Logger.log('Searches sheet upgraded: ' + rows.length + ' row(s) preserved.');
+  return sh;
+}
+
+function dateFromTimestamp(ts) {
+  if (!ts) return '';
+  if (ts instanceof Date) return isoDate(ts);
+  var text = String(ts);
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(text)) {
+    var parsed = new Date(text);
+    if (!isNaN(parsed.getTime())) return isoDate(parsed);
+  }
+  return text.slice(0, 10);
 }
 
 /** Run this ONCE from the editor. The key is stored in Script Properties,
@@ -201,17 +294,39 @@ function doPost(e) {
 
 /* --------------------------------------------------------------- answering */
 
+function safeLog(data) {
+  try {
+    return logQuestion(data);
+  } catch (err) {
+    Logger.log('logQuestion failed: ' + err);
+    return false;
+  }
+}
+
 function answer(p, cb) {
   var question = scrub(String(p.q || '')).slice(0, QUESTION_CHARS);
   if (!question) return json({ ok: false, error: 'empty question' }, cb);
 
+  var started = Date.now();
+  var qid = cleanId(p.qid);
+  var sid = cleanId(p.sid);
+
   var sources = parseSources(p.sources).slice(0, MAX_SOURCES);
   if (!sources.length) {
     // Nothing to ground on: answer honestly that we cannot verify right now.
-    return json({ ok: true, answered: false, answer: '', reason: 'no sources' }, cb);
+    var loggedNoSources = safeLog({
+      question: question, answered: false, outcome: 'no-sources',
+      qid: qid, sid: sid, error: 'no sources'
+    });
+    return json({ ok: true, answered: false, answer: '', reason: 'no sources',
+                  logged: loggedNoSources }, cb);
   }
   if (!hasApiKey()) {
-    return json({ ok: false, error: 'no api key', fallback: true }, cb);
+    var loggedNoKey = safeLog({
+      question: question, answered: false, qid: qid, sid: sid, error: 'no api key'
+    });
+    return json({ ok: false, error: 'no api key', fallback: true,
+                  logged: loggedNoKey }, cb);
   }
 
   var history = parseHistory(p.history);
@@ -267,17 +382,44 @@ function answer(p, cb) {
     { role: 'user', content: userMessage }
   ]);
 
-  if (!res.ok) return json({ ok: false, error: res.error, fallback: true }, cb);
+  if (!res.ok) {
+    var loggedOpenAiError = safeLog({
+      question: question, answered: false, qid: qid, sid: sid, error: res.error
+    });
+    return json({ ok: false, error: res.error, fallback: true,
+                  logged: loggedOpenAiError }, cb);
+  }
 
   var text = String(res.text || '').trim();
-  if (!text) return json({ ok: false, error: 'empty completion', fallback: true }, cb);
+  if (!text) {
+    var loggedEmpty = safeLog({
+      question: question, answered: false, qid: qid, sid: sid,
+      error: 'empty completion'
+    });
+    return json({ ok: false, error: 'empty completion', fallback: true,
+                  logged: loggedEmpty }, cb);
+  }
+
+  var usedSources = citedSources(text, sources);
+  var logged = safeLog({
+    question: question,
+    answered: true,
+    answer: text.slice(0, 3000),
+    sources: usedSources,
+    model: MODEL,
+    qid: qid,
+    sid: sid,
+    response_ms: Date.now() - started,
+    outcome: 'answered'
+  });
 
   return json({
     ok: true,
     answered: true,
     answer: text.slice(0, 3000),
-    sources: citedSources(text, sources),
-    model: MODEL
+    sources: usedSources,
+    model: MODEL,
+    logged: logged
   }, cb);
 }
 
@@ -595,41 +737,92 @@ function recordVisit(data) {
   return appendRow(VISIT_SHEET, [now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device)]);
 }
 
-// One row per question - what was asked, whether the assistant answered it, and
-// a question id + session id used to attach "did this help" feedback later.
+// One row per question: what was asked, the answer the student actually saw,
+// the sources and model used, whether it was answered, and the later
+// resolved / feedback fields. The question id and session id make it possible
+// to attach "did this help" feedback and the survey to the same row.
 function logQuestion(data) {
   var q = scrub(String(data.question || data.q || '')).slice(0, 200);
   if (!q) return false;
+
   var answered = data.answered === true || data.answered === 'true';
+  var answer = cleanAnswer(data.answer);
+  var sources = formatSources(data.sources);
+  var model = cleanLabel(String(data.model || '')).slice(0, 60);
+  var responseMs = parseInt(data.response_ms, 10);
+  if (!isFinite(responseMs) || responseMs < 0) responseMs = '';
+
+  var outcome = String(data.outcome || '').trim();
+  var error = cleanLabel(String(data.error || '')).slice(0, 500);
+  if (!outcome) outcome = answered ? 'answered' : (error ? 'error' : 'refused');
+
+  var resolved = (data.resolved === 'yes' || data.resolved === 'no') ? data.resolved : '';
+  var feedback = (data.feedback === 'helped' || data.feedback === 'not-helpful') ? data.feedback : '';
+  var now = new Date();
+
   return appendRow('Searches', [
-    new Date().toISOString(), q, cleanId(data.qid),
-    answered ? 'ai' : 'no-answer', cleanId(data.sid), answered ? 'yes' : 'no'
+    now.toISOString(), q, cleanId(data.qid), outcome, cleanId(data.sid),
+    answered ? 'yes' : 'no', isoDate(now), answer, sources, model, responseMs,
+    resolved, feedback, feedback ? now.toISOString() : '', error
   ]);
 }
 
+// The answer is model output, not raw user input, so keep dates, fees and
+// phone numbers intact. Only strip data that could still identify a student.
+function cleanAnswer(value) {
+  return String(value == null ? '' : value)
+    .replace(/[^\s@]+@[^\s@]+/g, ' [email] ')
+    .replace(/\b(?:password|passwd|pwd|passcode)\b\s*(?:is|are|was|=|:)?\s*["']?[^\s"']{3,}["']?/gi,
+             ' password [redacted]')
+    .slice(0, 8000);
+}
+
+function formatSources(value) {
+  var list = value;
+  if (typeof list === 'string') {
+    try { list = JSON.parse(list); } catch (e) { list = []; }
+  }
+  if (!Array.isArray(list)) return '';
+  return list.slice(0, 10).map(function (source) {
+    if (typeof source === 'string') return source;
+    if (!source || !source.url) return '';
+    return (source.title ? String(source.title).slice(0, 90) + ' - ' : '') +
+      String(source.url).slice(0, 300);
+  }).filter(function (line) { return !!line; }).join('\n').slice(0, 2000);
+}
+
 // "That helped / that didn't help". Updates the matching question row in place
-// when the id is found, otherwise records a standalone feedback row.
+// when the id is found, otherwise records a standalone feedback row. The
+// answer status in `outcome` is left intact; feedback lives in its own columns.
 function recordFeedback(data) {
   var qid = cleanId(data.qid);
   var good = data.helpful === true || data.helpful === 'true';
-  var outcome = good ? 'helped' : 'not-helpful';
+  var feedback = good ? 'helped' : 'not-helpful';
+  var resolved = good ? 'yes' : 'no';
+  var now = new Date().toISOString();
+
   if (qid) {
     var sh = ss().getSheetByName('Searches');
     if (sh && sh.getLastRow() >= 2) {
       var ids = sh.getRange(2, 3, sh.getLastRow() - 1, 1).getValues();
       for (var i = ids.length - 1; i >= 0; i--) {
         if (String(ids[i][0]) === qid) {
-          sh.getRange(i + 2, 4).setValue(outcome);
+          sh.getRange(i + 2, 12, 1, 3).setValues([[resolved, feedback, now]]);
           return true;
         }
       }
     }
   }
-  appendRow('Searches', [
-    new Date().toISOString(), scrub(String(data.question || data.q || '')).slice(0, 200),
-    qid, outcome, cleanId(data.sid), ''
-  ]);
-  return true;
+
+  return logQuestion({
+    question: data.question || data.q,
+    answered: false,
+    outcome: 'feedback-only',
+    qid: qid,
+    sid: data.sid,
+    resolved: resolved,
+    feedback: feedback
+  });
 }
 
 // One row per completed survey. Values arrive as 'yes'/'no' (or '' if skipped).
@@ -651,11 +844,28 @@ function recordSurvey(data) {
     }
   });
   var overall = answered ? Math.round((yesCount / answered) * 100) / 100 : '';
-  return appendRow(SURVEY_SHEET, [
+  var qid = cleanId(data.qid);
+  var appended = appendRow(SURVEY_SHEET, [
     now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device),
-    cleanId(data.qid), scrub(String(data.q || data.question || '')).slice(0, 200),
+    qid, scrub(String(data.q || data.question || '')).slice(0, 200),
     answers.resolved, answers.helpful, answers.recommend, answers.easy, overall
   ]);
+
+  // Mirror the survey's "Was your problem resolved?" answer onto the question
+  // row so the Searches sheet is a complete, real-time record on its own.
+  if (qid && answers.resolved) {
+    var sh = ss().getSheetByName('Searches');
+    if (sh && sh.getLastRow() >= 2) {
+      var ids = sh.getRange(2, 3, sh.getLastRow() - 1, 1).getValues();
+      for (var i = ids.length - 1; i >= 0; i--) {
+        if (String(ids[i][0]) === qid) {
+          sh.getRange(i + 2, 12).setValue(answers.resolved);
+          break;
+        }
+      }
+    }
+  }
+  return appended;
 }
 
 function cleanId(v) {
@@ -668,13 +878,13 @@ function deviceType(v) {
 }
 
 function isoDate(d) {
-  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  return Utilities.formatDate(d, 'Europe/Dublin', 'yyyy-MM-dd');
 }
 
 function yesterday() {
   var d = new Date();
   d.setDate(d.getDate() - 1);
-  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  return Utilities.formatDate(d, 'Europe/Dublin', 'yyyy-MM-dd');
 }
 
 /* ----------------------------------------------------------------- digest */
@@ -686,17 +896,23 @@ function yesterday() {
 function digest() {
   var sh = ss().getSheetByName('Searches');
   if (!sh || sh.getLastRow() < 2) return [];
-  var rows_ = sh.getRange(2, 2, sh.getLastRow() - 1, 4).getValues();
+  var rows_ = sh.getRange(2, 2, sh.getLastRow() - 1, 12).getValues();
 
   var agg = {};
   rows_.forEach(function (r) {
     var q = String(r[0] || '').trim();
     var outcome = String(r[2] || '').trim();
-    if (!q || q === '(blank)') return;
+    var feedback = String(r[11] || '').trim();
+    if (!q || q === '(blank)' || outcome === 'feedback-only') return;
     if (!agg[q]) agg[q] = { question: q, asked: 0, refused: 0, unhappy: 0, last: '' };
     agg[q].asked++;
-    if (outcome === 'no-answer') agg[q].refused++;
-    if (outcome === 'not-helpful') agg[q].unhappy++;
+    if (outcome === 'no-answer' || outcome === 'refused' ||
+        outcome === 'no-sources' || outcome === 'error') {
+      agg[q].refused++;
+    }
+    if (feedback === 'not-helpful' || (!feedback && outcome === 'not-helpful')) {
+      agg[q].unhappy++;
+    }
   });
 
   return Object.keys(agg)
@@ -888,6 +1104,26 @@ function checkWiring() {
   return problems;
 }
 
+/** Diagnostic: writes one labelled test row to Searches and logs the result. */
+function testLogging() {
+  var qid = 'test-' + new Date().getTime();
+  var ok = logQuestion({
+    question: '[test] What are the semester dates?',
+    answered: true,
+    answer: 'This is a test answer written by testLogging(). It should appear in the answer column.',
+    sources: [{ title: 'NCI Academic Calendar', url: 'https://www.ncirl.ie/' }],
+    model: MODEL,
+    qid: qid,
+    sid: 'test-session',
+    response_ms: 123,
+    outcome: 'answered'
+  });
+  var sh = ss().getSheetByName('Searches');
+  Logger.log('testLogging: ' + (ok ? 'row appended for ' + qid : 'FAILED') +
+             (sh ? '; data rows=' + Math.max(sh.getLastRow() - 1, 0) : '; sheet missing'));
+  return ok;
+}
+
 /** Manual test: builds today's report and returns it (no email). */
 function previewDailyReport() {
   return dailyReportText(isoDate(new Date()));
@@ -915,18 +1151,21 @@ function dailyStats(day) {
 
   var sh = ss().getSheetByName('Searches');
   if (sh && sh.getLastRow() >= 2) {
-    sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues().forEach(function (r) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, SEARCH_HEADERS.length).getValues().forEach(function (r) {
       if (rowDay(r[0]) !== day) return;
       var q = String(r[1] || '').trim();
       var outcome = String(r[3] || '').trim();
       var answeredFlag = String(r[5] || '').trim();
-      if (!q) return;
+      var feedback = String(r[12] || '').trim();
+      if (!q || outcome === 'feedback-only') return;
       stats.questions++;
       stats.top[q] = (stats.top[q] || 0) + 1;
       if (answeredFlag === 'yes') stats.answered++;
       else stats.refused++;
-      if (outcome === 'helped') stats.helped++;
-      else if (outcome === 'not-helpful') stats.notHelped++;
+      var helped = feedback === 'helped' || (!feedback && outcome === 'helped');
+      var notHelped = feedback === 'not-helpful' || (!feedback && outcome === 'not-helpful');
+      if (helped) stats.helped++;
+      else if (notHelped) stats.notHelped++;
       else if (answeredFlag === 'yes') stats.noFeedback++;
       if (answeredFlag !== 'yes') stats.unanswered[q] = (stats.unanswered[q] || 0) + 1;
     });
@@ -945,7 +1184,7 @@ function dailyStats(day) {
 }
 
 function rowDay(ts) {
-  var tz = Session.getScriptTimeZone();
+  var tz = 'Europe/Dublin';
   if (ts instanceof Date) return Utilities.formatDate(ts, tz, 'yyyy-MM-dd');
   var s = String(ts || '');
   // Full ISO timestamps are stored in UTC; attribute them to the local day so
@@ -1128,14 +1367,16 @@ function allSearchTotals() {
   var out = { questions: 0, answered: 0, helped: 0, notHelped: 0, noAnswer: 0 };
   var sh = ss().getSheetByName('Searches');
   if (!sh || sh.getLastRow() < 2) return out;
-  sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues().forEach(function (r) {
+  sh.getRange(2, 1, sh.getLastRow() - 1, SEARCH_HEADERS.length).getValues().forEach(function (r) {
     if (!String(r[1] || '').trim()) return;
+    var outcome = String(r[3] || '').trim();
+    if (outcome === 'feedback-only') return;
     out.questions++;
     if (String(r[5] || '').trim() === 'yes') out.answered++;
     else out.noAnswer++;
-    var o = String(r[3] || '').trim();
-    if (o === 'helped') out.helped++;
-    else if (o === 'not-helpful') out.notHelped++;
+    var feedback = String(r[12] || '').trim();
+    if (feedback === 'helped' || (!feedback && outcome === 'helped')) out.helped++;
+    else if (feedback === 'not-helpful' || (!feedback && outcome === 'not-helpful')) out.notHelped++;
   });
   return out;
 }
@@ -1192,7 +1433,7 @@ function rows(name) {
 }
 
 var LOG_SHEETS = {
-  'Searches': ['timestamp', 'query', 'entry_id', 'outcome', 'session', 'answered'],
+  'Searches': SEARCH_HEADERS,
   'Visits': ['timestamp', 'date', 'session', 'device'],
   'Survey responses': ['timestamp', 'date', 'session', 'device', 'entry_id', 'question_asked',
                        'resolved', 'helpful', 'recommend', 'easy', 'overall'],
