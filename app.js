@@ -586,7 +586,7 @@ async function askAI(question, sources, kb, qid) {
     kb: JSON.stringify((kb || []).map(e => ({ question: e.question, answer: e.answer }))),
     history: JSON.stringify(history),
     qid: qid || '',
-    sid: SESSION_ID,
+    session: SESSION_ID,
     device: deviceType()
   });
   if (!url) return null;
@@ -652,7 +652,7 @@ function beacon(params, attempt) {
 }
 
 function recordVisit() {
-  beacon({ mode: 'visit', sid: SESSION_ID, device: deviceType() });
+  beacon({ mode: 'visit', session: SESSION_ID, device: deviceType() });
 }
 
 function logQuestion(question, answered, qid, answer, sources, model, error) {
@@ -661,7 +661,7 @@ function logQuestion(question, answered, qid, answer, sources, model, error) {
     q: scrub(question).slice(0, 200),
     answered: answered ? 'true' : 'false',
     qid: qid,
-    sid: SESSION_ID,
+    session: SESSION_ID,
     answer: scrubAnswer(answer).slice(0, 1000),
     sources: JSON.stringify((sources || []).map(s => ({ title: s.title, url: s.url }))),
     model: String(model || ''),
@@ -670,7 +670,7 @@ function logQuestion(question, answered, qid, answer, sources, model, error) {
 }
 
 function sendFeedback(qid, question, helpful) {
-  beacon({ mode: 'feedback', qid: qid, helpful: helpful ? 'true' : 'false', q: scrub(question).slice(0, 200), sid: SESSION_ID });
+  beacon({ mode: 'feedback', qid: qid, helpful: helpful ? 'true' : 'false', q: scrub(question).slice(0, 200), session: SESSION_ID });
 }
 
 // Send the whole survey in ONE beacon. Four rapid requests would risk Google's
@@ -680,7 +680,7 @@ function sendSurvey() {
     mode: 'survey',
     qid: SURVEY.qid,
     q: scrub(SURVEY.question).slice(0, 200),
-    sid: SESSION_ID,
+    session: SESSION_ID,
     device: deviceType()
   };
   CONFIG.surveyQuestions.forEach(q => { payload[q.id] = SURVEY.answers[q.id] || ''; });

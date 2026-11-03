@@ -37,7 +37,7 @@
     answered: true,
     answer: 'Exams run from 5 May. Email me at a@b.com or password hunter2.',
     sources: [{ title: 'NCI Exams', url: 'https://www.ncirl.ie/exams' }],
-    model: 'gpt-4o', qid: 'q-123', sid: 's-456', response_ms: 321, outcome: 'answered'
+    model: 'gpt-4o', qid: 'q-123', session: 's-456', response_ms: 321, outcome: 'answered'
   });
   check(ok === true, 'logQuestion returned true');
   check(captured.length === 1 && captured[0].name === 'Searches', 'one Searches row');
@@ -57,7 +57,7 @@
 
   // 2. error row
   captured = [];
-  api.logQuestion({ question: 'bad question', answered: false, error: 'no api key', qid: 'q-err', sid: 's' });
+  api.logQuestion({ question: 'bad question', answered: false, error: 'no api key', qid: 'q-err', session: 's' });
   row = captured[0].values;
   check(row[3] === 'error', 'outcome error');
   check(row[5] === 'no', 'answered no');
@@ -141,7 +141,7 @@
 
   // 4. standalone feedback falls back to a feedback-only row
   captured = [];
-  api.recordFeedback({ qid: 'missing', helpful: 'false', question: 'lost question', sid: 's' });
+  api.recordFeedback({ qid: 'missing', helpful: 'false', question: 'lost question', session: 's' });
   row = captured[0].values;
   check(row[3] === 'feedback-only', 'feedback-only outcome');
   check(row[11] === 'no' && row[12] === 'not-helpful', 'standalone feedback columns');

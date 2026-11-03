@@ -309,7 +309,7 @@ function answer(p, cb) {
 
   var started = Date.now();
   var qid = cleanId(p.qid);
-  var sid = cleanId(p.sid);
+  var sid = cleanId(p.session || p.sid);
 
   var sources = parseSources(p.sources).slice(0, MAX_SOURCES);
   if (!sources.length) {
@@ -734,7 +734,7 @@ var VISIT_SHEET = 'Visits';
 // device type and the timestamp. No IP address, name or email is ever stored.
 function recordVisit(data) {
   var now = new Date();
-  return appendRow(VISIT_SHEET, [now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device)]);
+  return appendRow(VISIT_SHEET, [now.toISOString(), isoDate(now), cleanId(data.session || data.sid), deviceType(data.device)]);
 }
 
 // One row per question: what was asked, the answer the student actually saw,
@@ -761,7 +761,7 @@ function logQuestion(data) {
   var now = new Date();
 
   return appendRow('Searches', [
-    now.toISOString(), q, cleanId(data.qid), outcome, cleanId(data.sid),
+    now.toISOString(), q, cleanId(data.qid), outcome, cleanId(data.session || data.sid),
     answered ? 'yes' : 'no', isoDate(now), answer, sources, model, responseMs,
     resolved, feedback, feedback ? now.toISOString() : '', error
   ]);
@@ -819,7 +819,7 @@ function recordFeedback(data) {
     answered: false,
     outcome: 'feedback-only',
     qid: qid,
-    sid: data.sid,
+    session: data.session || data.sid,
     resolved: resolved,
     feedback: feedback
   });
@@ -846,7 +846,7 @@ function recordSurvey(data) {
   var overall = answered ? Math.round((yesCount / answered) * 100) / 100 : '';
   var qid = cleanId(data.qid);
   var appended = appendRow(SURVEY_SHEET, [
-    now.toISOString(), isoDate(now), cleanId(data.sid), deviceType(data.device),
+    now.toISOString(), isoDate(now), cleanId(data.session || data.sid), deviceType(data.device),
     qid, scrub(String(data.q || data.question || '')).slice(0, 200),
     answers.resolved, answers.helpful, answers.recommend, answers.easy, overall
   ]);
@@ -1114,7 +1114,7 @@ function testLogging() {
     sources: [{ title: 'NCI Academic Calendar', url: 'https://www.ncirl.ie/' }],
     model: MODEL,
     qid: qid,
-    sid: 'test-session',
+    session: 'test-session',
     response_ms: 123,
     outcome: 'answered'
   });
