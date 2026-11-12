@@ -1001,23 +1001,10 @@ function sendDailyReport() {
   return text;
 }
 
-/** Emails today's full report (Dashboard-style summary) at ~08:00. */
+/** Backwards-compatible name for the 08:00 trigger. The morning email must
+ *  cover YESTERDAY, not the current day (which is almost always zero at 08:00). */
 function sendMorningReport() {
-  var day = isoDate(new Date());
-  var text = dailyReportText(day);
-  writeDailyReportRow(day);
-  writeSurveySummaryRows(day);
-  writeTopQuestionsRows(day);
-  writeDashboard();
-  var to = reportRecipient();
-  if (to) {
-    MailApp.sendEmail({
-      to: to,
-      subject: 'NCI Student Assistant - morning report ' + day,
-      body: text
-    });
-  }
-  return text;
+  return sendDailyReport();
 }
 
 /** Run ONCE from the editor to email today's report at ~08:00 every day. */
@@ -1028,8 +1015,8 @@ function setupMorningReport(email) {
       ScriptApp.deleteTrigger(t);
     }
   });
-  ScriptApp.newTrigger('sendMorningReport').timeBased().everyDays(1).atHour(8).create();
-  Logger.log('Morning report (today) scheduled for ~08:00 each day. Recipient: ' + reportRecipient());
+  ScriptApp.newTrigger('sendDailyReport').timeBased().everyDays(1).atHour(8).create();
+  Logger.log('Daily report (yesterday) scheduled for ~08:00 each day. Recipient: ' + reportRecipient());
 }
 
 /** Rebuild every reporting tab for TODAY. Handy while testing. */
