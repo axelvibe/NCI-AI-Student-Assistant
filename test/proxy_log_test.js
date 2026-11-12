@@ -14,6 +14,9 @@
   var wrapper = new Function('Logger', src + '\n' +
     'return { logQuestion: logQuestion, recordFeedback: recordFeedback, ' +
     'formatSources: formatSources, ensureSearchesSheet: ensureSearchesSheet, ' +
+    'isTestSession: isTestSession, isTestQuestionText: isTestQuestionText, ' +
+    'searchDedupeKey: searchDedupeKey, surveyDedupeKey: surveyDedupeKey, ' +
+    'dailyStats: dailyStats, csvCell: csvCell, ' +
     'SEARCH_HEADERS: SEARCH_HEADERS, ' +
     'setAppend: function (fn) { appendRow = fn; }, ' +
     'setSS: function (fn) { ss = fn; } };');
@@ -184,6 +187,56 @@
   var migrated2 = oldestSheet._data;
   check(migrated2[1][3] === 'answered' && migrated2[1][5] === 'yes', 'is_refusal=no becomes answered');
   check(migrated2[2][3] === 'refused' && migrated2[2][5] === 'no', 'is_refusal=yes becomes refused');
+
+  // 8. report filtering and deduplication
+  check(api.isTestSession('abc') && api.isTestSession('ABC'), 'abc is a test session');
+  check(!api.isTestSession('s-456'), 'real session is not test');
+  check(api.isTestQuestionText('test') && api.isTestQuestionText('[test] dates'), 'test text detected');
+  check(!api.isTestQuestionText('latest news'), 'normal text is not test');
+
+  var d1 = ['2026-01-01T09:00:00Z', 'What are the fees?', 'q1', 'answered', 's1', 'yes', '2026-01-01', 'a', 's', 'gpt-4o', 1, '', '', '', ''];
+  var d2 = ['2026-01-01T09:01:00Z', 'What are the fees?', 'q1', 'answered', 's1', 'yes', '2026-01-01', 'a', 's', 'gpt-4o', 1, '', '', '', ''];
+  var d3 = ['2026-01-01T09:02:00Z', 'What are the fees?', 'q2', 'answered', 's2', 'yes', '2026-01-01', 'a', 's', 'gpt-4o', 1, '', '', '', ''];
+  var d4 = ['2026-01-01T09:05:00Z', 'When are exams?', '', 'answered', 's2', 'yes', '2026-01-01', 'a', 's', 'gpt-4o', 1, '', '', '', ''];
+  var d5 = ['2026-01-01T09:05:30Z', 'When are exams?', '', 'answered', 's2', 'yes', '2026-01-01', 'a', 's', 'gpt-4o', 1, '', '', '', ''];
+  var d6 = ['2026-01-01T09:06:00Z', 'test', 'q3', 'answered', 'abc', 'yes', '2026-01-01', 'a', 's', 'gpt-4o', 1, '', '', '', ''];
+  var d7 = ['2026-01-01T09:07:00Z', 'fees', 'q4', 'feedback-only', 's1', 'no', '2026-01-01', '', '', '', '', '', 'helped', '2026-01-01T09:07:00Z', ''];
+  check(api.searchDedupeKey(d1) === api.searchDedupeKey(d2), 'same qid dedupes');
+  check(api.searchDedupeKey(d1) !== api.searchDedupeKey(d3), 'different qid survives');
+  check(api.searchDedupeKey(d4) === api.searchDedupeKey(d5), 'blank qid same minute dedupes');
+
+  var visits = [
+    ['timestamp', 'date', 'session', 'device'],
+    ['2026-01-01T09:00:00Z', '2026-01-01', 's1', 'desktop'],
+    ['2026-01-01T09:01:00Z', '2026-01-01', 's1', 'desktop'],
+    ['2026-01-01T09:02:00Z', '2026-01-01', 'abc', 'desktop'],
+    ['2026-01-01T09:03:00Z', '2026-01-01', 's2', 'mobile']
+  ];
+  var surveys = [
+    ['timestamp', 'date', 'session', 'device', 'entry_id', 'question_asked', 'resolved', 'helpful', 'recommend', 'easy', 'overall'],
+    ['2026-01-01T09:10:00Z', '2026-01-01', 's1', 'desktop', 'q1', 'What are the fees?', 'yes', 'yes', 'yes', 'yes', 1],
+    ['2026-01-01T09:10:05Z', '2026-01-01', 's1', 'desktop', 'q1', 'What are the fees?', 'yes', 'yes', 'yes', 'yes', 1],
+    ['2026-01-01T09:11:00Z', '2026-01-01', 'abc', 'desktop', 'q2', 'test', 'yes', 'no', 'yes', 'no', 0.5],
+    ['2026-01-01T09:12:00Z', '2026-01-01', 's2', 'mobile', 'q3', 'When are exams?', 'yes', 'no', 'yes', 'yes', 0.75]
+  ];
+  var searchSheet = makeSheet([api.SEARCH_HEADERS.slice()].concat([d1, d2, d3, d4, d5, d6, d7]), 20, 15);
+  var visitSheet = makeSheet(visits, 10, 4);
+  var surveySheet = makeSheet(surveys, 10, 11);
+  api.setSS(function () {
+    return { getSheetByName: function (n) {
+      if (n === 'Searches') return searchSheet;
+      if (n === 'Visits') return visitSheet;
+      if (n === 'Survey responses') return surveySheet;
+      return null;
+    } };
+  });
+  var stats = api.dailyStats('2026-01-01');
+  check(stats.visits === 3, 'visits exclude abc, got ' + stats.visits);
+  check(stats.uniqueSessions === 2, 'distinct users, got ' + stats.uniqueSessions);
+  check(stats.questions === 3, 'questions deduped/excluded, got ' + stats.questions);
+  check(stats.surveys === 2, 'surveys deduped/excluded, got ' + stats.surveys);
+  check(api.csvCell('a,b') === '"a,b"', 'csv comma quoted');
+  check(api.csvCell('a"b') === '"a""b"', 'csv quote escaped');
 
   print('');
   print('LOGGING TESTS: ' + (failures ? failures + ' failure(s)' : 'all passed'));

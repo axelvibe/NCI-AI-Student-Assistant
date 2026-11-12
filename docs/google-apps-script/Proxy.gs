@@ -70,7 +70,7 @@ var SURVEY_QUESTIONS = [
   { id: 'easy',      label: 'Was it easy to use?' }
 ];
 
-var REPORT_HEADERS = ['date', 'visits', 'unique_sessions', 'questions', 'answered',
+var REPORT_HEADERS = ['date', 'visits', 'distinct_users', 'questions', 'answered',
   'answered_%', 'helped', 'helped_%', 'not_helped', 'no_feedback', 'no_answer', 'surveys'];
 
 // Raw question log. The first six columns keep their original positions so old
@@ -1117,7 +1117,6 @@ function previewDailyReport() {
 }
 
 function dailyStats(day) {
-  var zero = function (o) { return Object.keys(o).length; };
   var stats = {
     date: day,
     visits: 0, sessions: {}, questions: 0, answered: 0,
@@ -1125,49 +1124,122 @@ function dailyStats(day) {
     top: {}, unanswered: {}
   };
 
-  var vs = ss().getSheetByName(VISIT_SHEET);
-  if (vs && vs.getLastRow() >= 2) {
-    vs.getRange(2, 1, vs.getLastRow() - 1, 4).getValues().forEach(function (r) {
-      // The date cell is often read back as a Date object, so normalise it.
-      if (rowDay(r[1]) !== day) return;
-      stats.visits++;
-      var sid = String(r[2] || '');
-      if (sid) stats.sessions[sid] = true;
-    });
-  }
+  visitRows(day).forEach(function (r) {
+    stats.visits++;
+    var sid = String(r[2] || '').trim();
+    if (sid) stats.sessions[sid] = true;
+  });
 
-  var sh = ss().getSheetByName('Searches');
-  if (sh && sh.getLastRow() >= 2) {
-    sh.getRange(2, 1, sh.getLastRow() - 1, SEARCH_HEADERS.length).getValues().forEach(function (r) {
-      if (rowDay(r[0]) !== day) return;
-      var q = String(r[1] || '').trim();
-      var outcome = String(r[3] || '').trim();
-      var answeredFlag = String(r[5] || '').trim();
-      var feedback = String(r[12] || '').trim();
-      if (!q || outcome === 'feedback-only') return;
-      stats.questions++;
-      stats.top[q] = (stats.top[q] || 0) + 1;
-      if (answeredFlag === 'yes') stats.answered++;
-      else stats.refused++;
-      var helped = feedback === 'helped' || (!feedback && outcome === 'helped');
-      var notHelped = feedback === 'not-helpful' || (!feedback && outcome === 'not-helpful');
-      if (helped) stats.helped++;
-      else if (notHelped) stats.notHelped++;
-      else if (answeredFlag === 'yes') stats.noFeedback++;
-      if (answeredFlag !== 'yes') stats.unanswered[q] = (stats.unanswered[q] || 0) + 1;
-    });
-  }
+  searchRows(day).forEach(function (r) {
+    var q = String(r[1] || '').trim();
+    var outcome = String(r[3] || '').trim();
+    var answeredFlag = String(r[5] || '').trim();
+    var feedback = String(r[12] || '').trim();
+    if (!q || outcome === 'feedback-only') return;
+    stats.questions++;
+    stats.top[q] = (stats.top[q] || 0) + 1;
+    if (answeredFlag === 'yes') stats.answered++;
+    else stats.refused++;
+    var helped = feedback === 'helped' || (!feedback && outcome === 'helped');
+    var notHelped = feedback === 'not-helpful' || (!feedback && outcome === 'not-helpful');
+    if (helped) stats.helped++;
+    else if (notHelped) stats.notHelped++;
+    else if (answeredFlag === 'yes') stats.noFeedback++;
+    if (answeredFlag !== 'yes') stats.unanswered[q] = (stats.unanswered[q] || 0) + 1;
+  });
 
-  stats.uniqueSessions = zero(stats.sessions);
-
-  var sv = ss().getSheetByName(SURVEY_SHEET);
-  if (sv && sv.getLastRow() >= 2) {
-    sv.getRange(2, 1, sv.getLastRow() - 1, 11).getValues().forEach(function (r) {
-      if (rowDay(r[1]) === day) stats.surveys++;
-    });
-  }
-
+  stats.uniqueSessions = Object.keys(stats.sessions).length;
+  stats.surveys = surveyRows(day).length;
   return stats;
+}
+
+/* ------------------------------------------------------- count filtering */
+
+// Test data is excluded from every report, but never deleted from the raw tabs.
+function isTestSession(sid) {
+  return String(sid == null ? '' : sid).trim().toLowerCase() === 'abc';
+}
+
+function isTestQuestionText(q) {
+  var text = String(q == null ? '' : q).trim().toLowerCase();
+  return text === 'test' || text.indexOf('[test]') === 0;
+}
+
+function isTestSearchRow(r) {
+  return isTestSession(r[4]) || isTestQuestionText(r[1]) ||
+    String(r[2] || '').trim().toLowerCase().indexOf('test-') === 0;
+}
+
+function isTestSurveyRow(r) {
+  return isTestSession(r[2]) || isTestQuestionText(r[5]) ||
+    String(r[4] || '').trim().toLowerCase().indexOf('test-') === 0;
+}
+
+function minuteKey(value) {
+  if (value instanceof Date) return Utilities.formatDate(value, 'Europe/Dublin', 'yyyy-MM-dd HH:mm');
+  return String(value == null ? '' : value).slice(0, 16);
+}
+
+function searchDedupeKey(r) {
+  var qid = cleanId(r[2]);
+  if (qid) return 'qid:' + qid;
+  return 'row:' + String(r[4] || '').trim() + '|' +
+    String(r[1] || '').trim().toLowerCase().replace(/\s+/g, ' ') + '|' + minuteKey(r[0]);
+}
+
+function surveyDedupeKey(r) {
+  var qid = cleanId(r[4]);
+  if (qid) return 'qid:' + qid;
+  var answers = [r[6], r[7], r[8], r[9]].map(function (v) {
+    return String(v == null ? '' : v).toLowerCase();
+  }).join('|');
+  return 'row:' + String(r[2] || '').trim() + '|' +
+    String(r[5] || '').trim().toLowerCase().replace(/\s+/g, ' ') + '|' +
+    answers + '|' + rowDay(r[1]);
+}
+
+function visitRows(day) {
+  var rows = [];
+  var sh = ss().getSheetByName(VISIT_SHEET);
+  if (!sh || sh.getLastRow() < 2) return rows;
+  sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues().forEach(function (r) {
+    if (day && rowDay(r[1]) !== day) return;
+    if (isTestSession(r[2])) return;
+    rows.push(r);
+  });
+  return rows;
+}
+
+function searchRows(day) {
+  var rows = [];
+  var sh = ss().getSheetByName('Searches');
+  if (!sh || sh.getLastRow() < 2) return rows;
+  var seen = {};
+  sh.getRange(2, 1, sh.getLastRow() - 1, SEARCH_HEADERS.length).getValues().forEach(function (r) {
+    if (day && rowDay(r[0]) !== day) return;
+    if (isTestSearchRow(r)) return;
+    var key = searchDedupeKey(r);
+    if (seen[key]) return;
+    seen[key] = true;
+    rows.push(r);
+  });
+  return rows;
+}
+
+function surveyRows(day) {
+  var rows = [];
+  var sh = ss().getSheetByName(SURVEY_SHEET);
+  if (!sh || sh.getLastRow() < 2) return rows;
+  var seen = {};
+  sh.getRange(2, 1, sh.getLastRow() - 1, 11).getValues().forEach(function (r) {
+    if (day && rowDay(r[1]) !== day) return;
+    if (isTestSurveyRow(r)) return;
+    var key = surveyDedupeKey(r);
+    if (seen[key]) return;
+    seen[key] = true;
+    rows.push(r);
+  });
+  return rows;
 }
 
 function rowDay(ts) {
@@ -1195,9 +1267,10 @@ function dailyReportText(day) {
     'Date: ' + s.date,
     '',
     'Visits:            ' + s.visits,
-    'Unique sessions:   ' + s.uniqueSessions,
-    '',
+    'Distinct users:    ' + s.uniqueSessions,
     'Questions asked:   ' + s.questions,
+    'Survey responses:  ' + s.surveys,
+    '',
     'Answered:          ' + s.answered + (s.questions ? ' (' + rate + '%)' : ''),
     '  helped:          ' + s.helped,
     '  not helpful:     ' + s.notHelped,
@@ -1220,8 +1293,8 @@ function dailyReportText(day) {
   }
 
   var sv = surveyStats(day);
-  lines.push('', 'Survey responses:  ' + sv.n);
   if (sv.n) {
+    lines.push('', 'Survey breakdown:');
     SURVEY_QUESTIONS.forEach(function (q) {
       var c = sv.q[q.id];
       var total = c.yes + c.no;
@@ -1262,10 +1335,7 @@ function writeDailyReportRow(day) {
 function surveyStats(day) {
   var out = { n: 0, q: {} };
   SURVEY_QUESTIONS.forEach(function (q) { out.q[q.id] = { yes: 0, no: 0, skipped: 0 }; });
-  var sh = ss().getSheetByName(SURVEY_SHEET);
-  if (!sh || sh.getLastRow() < 2) return out;
-  sh.getRange(2, 1, sh.getLastRow() - 1, 11).getValues().forEach(function (r) {
-    if (rowDay(r[1]) !== day) return;
+  surveyRows(day).forEach(function (r) {
     out.n++;
     SURVEY_QUESTIONS.forEach(function (q, i) {
       var v = String(r[6 + i] || '').toLowerCase();
@@ -1325,9 +1395,11 @@ function writeDashboard() {
   }
   var q = allSearchTotals();
   var sv = allSurveyTotals();
+  var v = allVisitTotals();
   var rate = q.questions ? Math.round((q.answered / q.questions) * 100) : 0;
   var rows = [
-    ['total_visits', countRows(VISIT_SHEET)],
+    ['total_visits', v.visits],
+    ['distinct_users', v.users],
     ['total_questions', q.questions],
     ['answer_rate_%', rate],
     ['helped', q.helped],
@@ -1345,16 +1417,9 @@ function writeDashboard() {
   sh.getRange(2, 1, rows.length, 3).setValues(rows);
 }
 
-function countRows(name) {
-  var sh = ss().getSheetByName(name);
-  return sh ? Math.max(sh.getLastRow() - 1, 0) : 0;
-}
-
 function allSearchTotals() {
   var out = { questions: 0, answered: 0, helped: 0, notHelped: 0, noAnswer: 0 };
-  var sh = ss().getSheetByName('Searches');
-  if (!sh || sh.getLastRow() < 2) return out;
-  sh.getRange(2, 1, sh.getLastRow() - 1, SEARCH_HEADERS.length).getValues().forEach(function (r) {
+  searchRows(null).forEach(function (r) {
     if (!String(r[1] || '').trim()) return;
     var outcome = String(r[3] || '').trim();
     if (outcome === 'feedback-only') return;
@@ -1368,12 +1433,22 @@ function allSearchTotals() {
   return out;
 }
 
+function allVisitTotals() {
+  var out = { visits: 0, users: 0 };
+  var sessions = {};
+  visitRows(null).forEach(function (r) {
+    out.visits++;
+    var sid = String(r[2] || '').trim();
+    if (sid) sessions[sid] = true;
+  });
+  out.users = Object.keys(sessions).length;
+  return out;
+}
+
 function allSurveyTotals() {
   var out = { n: 0, q: {} };
   SURVEY_QUESTIONS.forEach(function (q) { out.q[q.id] = { yes: 0, no: 0, skipped: 0 }; });
-  var sh = ss().getSheetByName(SURVEY_SHEET);
-  if (!sh || sh.getLastRow() < 2) return out;
-  sh.getRange(2, 1, sh.getLastRow() - 1, 11).getValues().forEach(function (r) {
+  surveyRows(null).forEach(function (r) {
     out.n++;
     SURVEY_QUESTIONS.forEach(function (q, i) {
       var v = String(r[6 + i] || '').toLowerCase();
@@ -1383,6 +1458,51 @@ function allSurveyTotals() {
     });
   });
   return out;
+}
+
+/* ---------------------------------------------------------------- export */
+
+/** Export the main Searches sheet as a CSV file in Google Drive. Returns its URL. */
+function exportCsv() {
+  var sh = ss().getSheetByName('Searches');
+  if (!sh) throw new Error('Searches sheet not found');
+  var file = exportFolder().createFile(sheetCsvBlob(sh));
+  Logger.log('Searches CSV: ' + file.getUrl());
+  return file.getUrl();
+}
+
+/** Export every tab as a CSV inside one ZIP in Google Drive. Returns its URL. */
+function exportAllCsv() {
+  var blobs = ss().getSheets().map(sheetCsvBlob);
+  var stamp = Utilities.formatDate(new Date(), 'Europe/Dublin', 'yyyy-MM-dd_HHmm');
+  var zip = Utilities.zip(blobs, 'NCI-Student-Assistant-' + stamp + '.zip');
+  var file = exportFolder().createFile(zip);
+  Logger.log('All CSV files (ZIP): ' + file.getUrl());
+  return file.getUrl();
+}
+
+function exportFolder() {
+  var name = 'NCI Student Assistant exports';
+  var found = DriveApp.getFoldersByName(name);
+  return found.hasNext() ? found.next() : DriveApp.createFolder(name);
+}
+
+function sheetCsvBlob(sh) {
+  var values = sh.getDataRange().getValues();
+  var lines = values.map(function (row) {
+    return row.map(csvCell).join(',');
+  });
+  var name = String(sh.getName()).replace(/[\\/:*?"<>|]/g, '-') + '.csv';
+  return Utilities.newBlob('\ufeff' + lines.join('\r\n'), 'text/csv', name);
+}
+
+function csvCell(value) {
+  if (value == null) return '';
+  if (value instanceof Date) {
+    value = Utilities.formatDate(value, 'Europe/Dublin', 'yyyy-MM-dd HH:mm:ss');
+  }
+  var s = String(value);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
 /* ---------------------------------------------------------------- helpers */

@@ -91,8 +91,13 @@ request when the survey finishes.
 ## Derived report dictionaries
 
 ### `Daily report` (one row per day, upserted by date)
-`date`, `visits`, `unique_sessions`, `questions`, `answered`, `answered_%`, `helped`,
+`date`, `visits`, `distinct_users`, `questions`, `answered`, `answered_%`, `helped`,
 `helped_%`, `not_helped`, `no_feedback`, `no_answer`, `surveys`.
+
+All counts exclude test rows (`session_id = abc`, question `test` or `[test] ...`,
+or ids starting `test-`) and collapse retry duplicates by `question_id`, falling
+back to the same session + question + minute for legacy rows. Repeats of the same
+question by different sessions are **not** collapsed.
 
 ### `Survey summary` (one row per day per question)
 `date`, `survey_question`, `yes`, `no`, `skipped`, `yes_%`.
@@ -101,9 +106,9 @@ request when the survey finishes.
 `date`, `question`, `times_asked`, `answered`, `unanswered`.
 
 ### `Dashboard` (all-time, rebuilt)
-`metric`, `value`, `last_updated`. Metrics: `total_visits`, `total_questions`,
-`answer_rate_%`, `helped`, `not_helped`, `no_answer`, `survey_responses`, and
-`survey_<id>_yes_%` for each of the four survey questions.
+`metric`, `value`, `last_updated`. Metrics: `total_visits`, `distinct_users`,
+`total_questions`, `answer_rate_%`, `helped`, `not_helped`, `no_answer`,
+`survey_responses`, and `survey_<id>_yes_%` for each of the four survey questions.
 
 ## How to run the reports
 
@@ -120,6 +125,8 @@ Run these from the Apps Script editor (function dropdown → Run):
 | `previewDailyReport()` | Returns today's report text (no email). |
 | `sendDailyReport()` | Emails + stores **yesterday's** report (the daily trigger calls this at ~08:00). |
 | `configureReporting()` | Sets the recipient and installs the daily 08:00 email trigger. |
+| `exportCsv()` | Exports the `Searches` tab as a CSV in the `NCI Student Assistant exports` Drive folder; returns the file URL. |
+| `exportAllCsv()` | Exports every tab as a CSV inside one timestamped ZIP in the same Drive folder; returns the file URL. |
 | `resetLogs()` | Erases all raw + derived data rows (keeps headers). Use only to clear test data. |
 
 **Important:** the email/report for a given run covers **yesterday**. To see today,
